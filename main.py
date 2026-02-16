@@ -32,8 +32,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Dropbox configuration
+# Dropbox configuration (supports refresh tokens for long-lived access)
 DROPBOX_ACCESS_TOKEN = os.getenv('DROPBOX_ACCESS_TOKEN')
+DROPBOX_REFRESH_TOKEN = os.getenv('DROPBOX_REFRESH_TOKEN')
+DROPBOX_APP_KEY = os.getenv('DROPBOX_APP_KEY')
+DROPBOX_APP_SECRET = os.getenv('DROPBOX_APP_SECRET')
 DROPBOX_GRAPHICS_ROOT = os.getenv('DROPBOX_GRAPHICS_ROOT', '/OFFICE/Clients')
 
 
@@ -52,13 +55,26 @@ def get_netsuite_client() -> NetSuiteClient:
 
 
 def get_graphics_service() -> Optional[DropboxGraphicsService]:
-    if not DROPBOX_ACCESS_TOKEN:
-        return None
-    try:
-        return DropboxGraphicsService(DROPBOX_ACCESS_TOKEN, DROPBOX_GRAPHICS_ROOT)
-    except Exception as e:
-        print(f"Graphics service not available: {e}")
-        return None
+    # Prefer refresh token (never expires) over access token
+    if DROPBOX_REFRESH_TOKEN and DROPBOX_APP_KEY and DROPBOX_APP_SECRET:
+        try:
+            return DropboxGraphicsService(
+                root_path=DROPBOX_GRAPHICS_ROOT,
+                refresh_token=DROPBOX_REFRESH_TOKEN,
+                app_key=DROPBOX_APP_KEY,
+                app_secret=DROPBOX_APP_SECRET
+            )
+        except Exception as e:
+            print(f"Graphics service (refresh token) not available: {e}")
+    
+    # Fall back to access token
+    if DROPBOX_ACCESS_TOKEN:
+        try:
+            return DropboxGraphicsService(DROPBOX_ACCESS_TOKEN, DROPBOX_GRAPHICS_ROOT)
+        except Exception as e:
+            print(f"Graphics service (access token) not available: {e}")
+    
+    return None
 
 
 class CustomerLookupResponse(BaseModel):

@@ -1,12 +1,14 @@
 """
 Graphics Proof Search Service - Dropbox Version
 Finds graphic proofs in Dropbox using the API
+With automatic token refresh support
 """
 
 import os
 import re
 import base64
 import requests
+import time
 from pathlib import Path
 from typing import Optional, List, Dict
 from dataclasses import dataclass
@@ -29,7 +31,7 @@ class ProofResult:
 
 
 class DropboxGraphicsService:
-    """Service for finding graphic proofs in Dropbox"""
+    """Service for finding graphic proofs in Dropbox with auto token refresh"""
     
     PROOF_EXTENSIONS = ['.pdf']
     PROOF_KEYWORDS = ['proof', 'final', 'approved', 'print']
@@ -42,13 +44,49 @@ class DropboxGraphicsService:
         'original', 'originals', 'wip', 'archive', 'backup'
     ]
     
-    def __init__(self, access_token: str, root_path: str = "/OFFICE/Clients"):
-        self.access_token = access_token
+    def __init__(self, access_token: str = None, root_path: str = "/OFFICE/Clients",
+                 refresh_token: str = None, app_key: str = None, app_secret: str = None):
         self.root_path = root_path
         self.base_url = "https://api.dropboxapi.com/2"
         self.content_url = "https://content.dropboxapi.com/2"
+        
+        # Token refresh support
+        self.refresh_token = refresh_token or os.getenv('DROPBOX_REFRESH_TOKEN')
+        self.app_key = app_key or os.getenv('DROPBOX_APP_KEY')
+        self.app_secret = app_secret or os.getenv('DROPBOX_APP_SECRET')
+        
+        # Use provided access token or get a new one
+        if access_token:
+            self.access_token = access_token
+        elif self.refresh_token and self.app_key and self.app_secret:
+            self.access_token = self._refresh_access_token()
+        else:
+            raise ValueError("Either access_token or refresh_token + app_key + app_secret required")
+        
+        self._token_expires_at = time.time() + 14000  # ~4 hours
+    
+    def _refresh_access_token(self) -> str:
+        """Get a new access token using the refresh token"""
+        response = requests.post(
+            "https://api.dropboxapi.com/oauth2/token",
+            auth=(self.app_key, self.app_secret),
+            data={
+                "grant_type": "refresh_token",
+                "refresh_token": self.refresh_token
+            }
+        )
+        response.raise_for_status()
+        data = response.json()
+        self._token_expires_at = time.time() + data.get('expires_in', 14400) - 300  # 5 min buffer
+        return data['access_token']
+    
+    def _ensure_valid_token(self):
+        """Refresh token if expired"""
+        if self.refresh_token and time.time() >= self._token_expires_at:
+            self.access_token = self._refresh_access_token()
     
     def _headers(self):
+        self._ensure_valid_token()
         return {"Authorization": f"Bearer {self.access_token}"}
     
     def _api_request(self, endpoint: str, data: dict) -> dict:
@@ -89,10 +127,11 @@ class DropboxGraphicsService:
     def _download_file(self, path: str) -> bytes:
         """Download a file from Dropbox"""
         import json
+        self._ensure_valid_token()
         response = requests.post(
             f"{self.content_url}/files/download",
             headers={
-                **self._headers(),
+                "Authorization": f"Bearer {self.access_token}",
                 "Dropbox-API-Arg": json.dumps({"path": path})
             }
         )
@@ -103,10 +142,11 @@ class DropboxGraphicsService:
         """Get thumbnail for a file (Dropbox generates for PDFs)"""
         import json
         try:
+            self._ensure_valid_token()
             response = requests.post(
                 f"{self.content_url}/files/get_thumbnail_v2",
                 headers={
-                    **self._headers(),
+                    "Authorization": f"Bearer {self.access_token}",
                     "Dropbox-API-Arg": json.dumps({
                         "resource": {".tag": "path", "path": path},
                         "format": {".tag": "png"},
