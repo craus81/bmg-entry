@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMG Fleet - Vehicle Check-In</title>
+    
+    <!-- Monday.com SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/monday-sdk-js/dist/main.js"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bmg-primary: #1a1a2e;
+            --bmg-accent: #e94560;
+            --bmg-accent-light: #ff6b6b;
+            --bmg-success: #00d68f;
+            --bmg-warning: #ffaa00;
+            --bmg-info: #4dabf7;
+            --bmg-surface: #0f0f1a;
+            --bmg-surface-elevated: #1f1f3a;
+            --bmg-text: #edf2f7;
+            --bmg-text-muted: #a0aec0;
+            --bmg-border: rgba(255, 255, 255, 0.08);
+            --font-display: 'Outfit', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --shadow-glow: 0 0 20px rgba(233, 69, 96, 0.3);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: var(--font-display);
+            background: var(--bmg-surface);
+            color: var(--bmg-text);
+            min-height: 100vh;
+            padding: var(--space-md);
+            background-image: 
+                radial-gradient(ellipse at top, rgba(233, 69, 96, 0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(22, 33, 62, 0.3) 0%, transparent 50%);
+        }
+        
+        .container { max-width: 520px; margin: 0 auto; }
+        
+        .header {
+            text-align: center;
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--bmg-border);
+        }
+        
+        .logo { font-size: 1.5rem; font-weight: 700; margin-bottom: var(--space-xs); }
+        .logo span { color: var(--bmg-accent); }
+        .subtitle { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--bmg-text-muted); }
+        
+        .steps { display: flex; justify-content: center; gap: var(--space-md); margin-bottom: var(--space-lg); }
+        .step { display: flex; align-items: center; gap: var(--space-sm); font-size: 0.75rem; color: var(--bmg-text-muted); }
+        .step.active { color: var(--bmg-accent); }
+        .step.complete { color: var(--bmg-success); }
+        .step-number {
+            width: 24px; height: 24px; border-radius: 50%;
+            background: var(--bmg-surface-elevated);
+            border: 2px solid currentColor;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 0.7rem;
+        }
+        .step.complete .step-number { background: var(--bmg-success); border-color: var(--bmg-success); color: white; }
+        
+        .input-group { margin-bottom: var(--space-md); }
+        .input-label {
+            display: block; font-size: 0.75rem; font-weight: 500;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--bmg-text-muted); margin-bottom: var(--space-sm);
+        }
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .input-icon { position: absolute; left: var(--space-md); color: var(--bmg-text-muted); pointer-events: none; }
+        
+        input[type="text"] {
+            width: 100%; padding: var(--space-md) var(--space-md) var(--space-md) 48px;
+            background: var(--bmg-surface-elevated);
+            border: 2px solid var(--bmg-border); border-radius: 12px;
+            color: var(--bmg-text); font-family: var(--font-mono);
+            font-size: 1rem; letter-spacing: 0.05em; transition: all 0.2s ease;
+        }
+        input[type="text"].text-input { font-family: var(--font-display); letter-spacing: normal; }
+        input[type="text"]:focus { outline: none; border-color: var(--bmg-accent); box-shadow: var(--shadow-glow); }
+        input[type="text"]:disabled { opacity: 0.5; cursor: not-allowed; }
+        input[type="text"]::placeholder { color: var(--bmg-text-muted); opacity: 0.5; font-family: var(--font-display); letter-spacing: normal; }
+        #vinInput { text-transform: uppercase; }
+        
+        .btn {
+            width: 100%; padding: var(--space-md) var(--space-lg);
+            border: none; border-radius: 12px;
+            font-family: var(--font-display); font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: center; gap: var(--space-sm);
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--bmg-accent) 0%, var(--bmg-accent-light) 100%); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-glow); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-secondary { background: var(--bmg-surface-elevated); border: 2px solid var(--bmg-border); color: var(--bmg-text); }
+        .btn-secondary:hover { border-color: var(--bmg-accent); color: var(--bmg-accent); }
+        .btn .spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .status {
+            margin-top: var(--space-md); padding: var(--space-md); border-radius: 10px;
+            font-size: 0.875rem; display: none; align-items: flex-start; gap: var(--space-sm);
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        .status.visible { display: flex; }
+        .status.error { background: rgba(233, 69, 96, 0.15); border: 1px solid rgba(233, 69, 96, 0.3); color: var(--bmg-accent-light); }
+        .status.success { background: rgba(0, 214, 143, 0.15); border: 1px solid rgba(0, 214, 143, 0.3); color: var(--bmg-success); }
+        .status.warning { background: rgba(255, 170, 0, 0.15); border: 1px solid rgba(255, 170, 0, 0.3); color: var(--bmg-warning); }
+        .status-icon { flex-shrink: 0; margin-top: 2px; }
+        
+        /* Vehicle Info Card */
+        .vehicle-info-card {
+            background: var(--bmg-surface-elevated);
+            border: 2px solid var(--bmg-success);
+            border-radius: 12px;
+            padding: var(--space-md);
+            margin-top: var(--space-md);
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .vehicle-info-card.visible { display: block; }
+        .vehicle-info-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+            color: var(--bmg-success);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .vehicle-info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-sm);
+        }
+        .vehicle-info-item {
+            background: var(--bmg-surface);
+            padding: var(--space-sm);
+            border-radius: 8px;
+            text-align: center;
+        }
+        .vehicle-info-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--bmg-text-muted);
+            margin-bottom: 2px;
+        }
+        .vehicle-info-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--bmg-text);
+        }
+        .vehicle-info-value.loading {
+            color: var(--bmg-text-muted);
+            font-style: italic;
+        }
+        
+        /* Graphics Proof Card */
+        .graphics-proof-card {
+            background: var(--bmg-surface-elevated);
+            border: 2px solid var(--bmg-info);
+            border-radius: 12px;
+            padding: var(--space-md);
+            margin-top: var(--space-md);
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .graphics-proof-card.visible { display: block; }
+        .graphics-proof-card.not-found { border-color: var(--bmg-warning); }
+        .graphics-proof-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+            color: var(--bmg-info);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .graphics-proof-card.not-found .graphics-proof-header { color: var(--bmg-warning); }
+        
+        /* Thumbnail Gallery */
+        .proof-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: var(--space-sm);
+        }
+        .proof-thumbnail {
+            background: var(--bmg-surface);
+            border: 2px solid var(--bmg-border);
+            border-radius: 8px;
+            padding: var(--space-xs);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .proof-thumbnail:hover {
+            border-color: var(--bmg-info);
+            transform: translateY(-2px);
+        }
+        .proof-thumbnail.selected {
+            border-color: var(--bmg-success);
+            box-shadow: 0 0 12px rgba(0, 214, 143, 0.3);
+        }
+        .proof-thumbnail img {
+            width: 100%;
+            height: 120px;
+            object-fit: contain;
+            background: white;
+            border-radius: 4px;
+        }
+        .proof-thumbnail-placeholder {
+            width: 100%;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bmg-surface-elevated);
+            border-radius: 4px;
+            color: var(--bmg-text-muted);
+        }
+        .proof-thumbnail-name {
+            font-size: 0.65rem;
+            color: var(--bmg-text-muted);
+            margin-top: var(--space-xs);
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .proof-thumbnail-version {
+            position: absolute;
+            top: var(--space-xs);
+            right: var(--space-xs);
+            background: var(--bmg-accent);
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .proof-thumbnail-check {
+            position: absolute;
+            top: var(--space-xs);
+            left: var(--space-xs);
+            background: var(--bmg-success);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .proof-thumbnail.selected .proof-thumbnail-check { display: flex; }
+        
+        .proof-loading {
+            text-align: center;
+            padding: var(--space-lg);
+            color: var(--bmg-text-muted);
+        }
+        .proof-loading .spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--bmg-border);
+            border-top-color: var(--bmg-info);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto var(--space-sm);
+        }
+        
+        .results { margin-top: var(--space-lg); }
+        .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md); padding-bottom: var(--space-sm); border-bottom: 1px solid var(--bmg-border); }
+        .results-title { font-size: 0.875rem; font-weight: 600; color: var(--bmg-text); }
+        .results-count { font-size: 0.75rem; color: var(--bmg-text-muted); background: var(--bmg-surface-elevated); padding: var(--space-xs) var(--space-sm); border-radius: 20px; }
+        
+        .order-card {
+            background: var(--bmg-surface-elevated); border: 2px solid var(--bmg-border);
+            border-radius: 12px; padding: var(--space-md); margin-bottom: var(--space-md);
+            transition: all 0.2s ease; cursor: pointer;
+        }
+        .order-card:hover { border-color: var(--bmg-accent); }
+        .order-card.selected { border-color: var(--bmg-success); background: rgba(0, 214, 143, 0.05); }
+        .order-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: var(--space-sm); }
+        .order-number { font-family: var(--font-mono); font-size: 1rem; font-weight: 600; color: var(--bmg-accent); }
+        .order-status { font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; padding: var(--space-xs) var(--space-sm); border-radius: 6px; background: rgba(0, 214, 143, 0.15); color: var(--bmg-success); }
+        .order-customer { font-size: 0.9rem; color: var(--bmg-text); margin-bottom: var(--space-sm); }
+        .order-meta { display: flex; gap: var(--space-md); font-size: 0.8rem; color: var(--bmg-text-muted); }
+        .order-meta span { display: flex; align-items: center; gap: var(--space-xs); }
+        .order-total { margin-top: var(--space-sm); text-align: right; font-family: var(--font-mono); font-size: 1.1rem; font-weight: 600; color: var(--bmg-success); }
+        .order-graphics-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: 6px;
+            background: rgba(77, 171, 247, 0.15);
+            color: var(--bmg-info);
+            margin-top: var(--space-sm);
+        }
+        .order-graphics-badge svg { width: 12px; height: 12px; }
+        
+        /* Line Items */
+        .line-items-toggle {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            font-size: 0.75rem;
+            color: var(--bmg-text-muted);
+            cursor: pointer;
+            margin-top: var(--space-sm);
+            padding: var(--space-xs) 0;
+        }
+        .line-items-toggle:hover { color: var(--bmg-info); }
+        .line-items-container {
+            display: none;
+            margin-top: var(--space-sm);
+            padding: var(--space-sm);
+            background: var(--bmg-surface);
+            border-radius: 8px;
+            font-size: 0.75rem;
+        }
+        .line-items-container.visible { display: block; }
+        .line-item {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--space-xs) 0;
+            border-bottom: 1px solid var(--bmg-border);
+        }
+        .line-item:last-child { border-bottom: none; }
+        .line-item-name { flex: 1; color: var(--bmg-text); }
+        .line-item-qty { color: var(--bmg-text-muted); margin: 0 var(--space-sm); }
+        .line-item-amount { color: var(--bmg-success); font-family: var(--font-mono); }
+        
+        .confirmation-panel { background: var(--bmg-surface-elevated); border: 2px solid var(--bmg-success); border-radius: 12px; padding: var(--space-lg); margin-top: var(--space-lg); text-align: center; }
+        .confirmation-icon { width: 64px; height: 64px; margin: 0 auto var(--space-md); background: rgba(0, 214, 143, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--bmg-success); }
+        .confirmation-title { font-size: 1.25rem; font-weight: 600; margin-bottom: var(--space-sm); }
+        .confirmation-details { color: var(--bmg-text-muted); font-size: 0.875rem; margin-bottom: var(--space-lg); text-align: left; }
+        .confirmation-details p { margin-bottom: var(--space-xs); }
+        .confirmation-details strong { color: var(--bmg-text); }
+        .confirmation-details .proof-found { color: var(--bmg-info); }
+        .confirmation-details .proof-missing { color: var(--bmg-warning); }
+        
+        .config-section { margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--bmg-border); }
+        .config-toggle { display: flex; align-items: center; gap: var(--space-sm); color: var(--bmg-text-muted); font-size: 0.75rem; cursor: pointer; }
+        .config-toggle:hover { color: var(--bmg-text); }
+        .config-panel { display: none; margin-top: var(--space-md); padding: var(--space-md); background: var(--bmg-surface-elevated); border-radius: 10px; }
+        .config-panel.visible { display: block; }
+        .config-panel input { font-size: 0.875rem; padding: var(--space-sm) var(--space-md); padding-left: var(--space-md); }
+        .btn-save-config { margin-top: var(--space-md); padding: var(--space-sm) var(--space-md); background: var(--bmg-success); border: none; border-radius: 8px; color: white; font-family: var(--font-display); font-size: 0.8rem; font-weight: 500; cursor: pointer; width: 100%; }
+        
+        .panel { display: none; }
+        .panel.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .hint { text-align: center; font-size: 0.7rem; color: var(--bmg-text-muted); margin-top: var(--space-md); opacity: 0.7; }
+        .hint kbd { display: inline-block; padding: 2px 6px; background: var(--bmg-surface-elevated); border-radius: 4px; font-family: var(--font-mono); font-size: 0.65rem; }
+        .button-row { display: flex; gap: var(--space-sm); margin-top: var(--space-md); }
+        .button-row .btn { flex: 1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="logo">BMG <span>Fleet</span></h1>
+            <p class="subtitle">Vehicle Check-In</p>
+        </header>
+        
+        <div class="steps">
+            <div class="step active" id="step1"><span class="step-number">1</span><span>Scan VIN</span></div>
+            <div class="step" id="step2"><span class="step-number">2</span><span>Customer</span></div>
+            <div class="step" id="step3"><span class="step-number">3</span><span>Confirm</span></div>
+        </div>
+        
+        <!-- Step 1: VIN Entry -->
+        <div id="panel1" class="panel active">
+            <div class="input-group">
+                <label class="input-label">Vehicle Identification Number</label>
+                <div class="input-wrapper">
+                    <input type="text" id="vinInput" placeholder="Scan or enter VIN..." maxlength="17" autocomplete="off" autofocus>
+                    <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                </div>
+            </div>
+            
+            <!-- Vehicle Info Card (shown after VIN decode) -->
+            <div id="vehicleInfoCard" class="vehicle-info-card">
+                <div class="vehicle-info-header">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Vehicle Identified
+                </div>
+                <div class="vehicle-info-grid">
+                    <div class="vehicle-info-item">
+                        <div class="vehicle-info-label">Year</div>
+                        <div class="vehicle-info-value" id="decodedYear">—</div>
+                    </div>
+                    <div class="vehicle-info-item">
+                        <div class="vehicle-info-label">Make</div>
+                        <div class="vehicle-info-value" id="decodedMake">—</div>
+                    </div>
+                    <div class="vehicle-info-item">
+                        <div class="vehicle-info-label">Model</div>
+                        <div class="vehicle-info-value" id="decodedModel">—</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="vinStatus" class="status"></div>
+            
+            <button class="btn btn-primary" id="nextBtn" onclick="goToStep2()" style="margin-top: var(--space-md);">
+                Next: Enter Customer 
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+            <p class="hint">VIN must be 17 characters • Auto-decodes when complete</p>
+        </div>
+        
+        <!-- Step 2: Customer Search -->
+        <div id="panel2" class="panel">
+            <div class="input-group">
+                <label class="input-label">Customer Name</label>
+                <div class="input-wrapper">
+                    <input type="text" id="customerInput" class="text-input" placeholder="Search customer..." autocomplete="off">
+                    <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="searchBtn" onclick="searchCustomer()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg> Search Sales Orders</button>
+            <div class="button-row">
+                <button class="btn btn-secondary" onclick="goToStep1()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Back</button>
+            </div>
+            <p class="hint">Partial name match supported (e.g., "Jerry Kelly")</p>
+            
+            <div id="statusMessage" class="status"><span class="status-icon"></span><span class="status-text"></span></div>
+            
+            <!-- Graphics Proof Card (shown after selecting an order) -->
+            <div id="graphicsProofCard" class="graphics-proof-card">
+                <div class="graphics-proof-header">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <span id="graphicsProofTitle">Graphics Proofs</span>
+                </div>
+                <div id="graphicsProofGallery" class="proof-gallery">
+                    <!-- Thumbnails inserted here -->
+                </div>
+            </div>
+            
+            <div id="resultsSection" class="results" style="display: none;">
+                <div class="results-header">
+                    <span class="results-title">Open Sales Orders</span>
+                    <span class="results-count" id="resultsCount">0 found</span>
+                </div>
+                <div id="resultsContainer"></div>
+                <button class="btn btn-primary" id="confirmBtn" style="display: none;" onclick="confirmSelection()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Confirm Selection</button>
+            </div>
+        </div>
+        
+        <!-- Step 3: Confirmation -->
+        <div id="panel3" class="panel">
+            <div class="confirmation-panel">
+                <div class="confirmation-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <h2 class="confirmation-title">Vehicle Checked In!</h2>
+                <div class="confirmation-details" id="confirmationDetails"></div>
+                <button class="btn btn-primary" onclick="startOver()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> Check In Another Vehicle</button>
+            </div>
+        </div>
+        
+        <div class="config-section">
+            <div class="config-toggle" onclick="toggleConfig()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Settings
+            </div>
+            <div id="configPanel" class="config-panel">
+                <div class="input-group">
+                    <label class="input-label">API Base URL</label>
+                    <input type="text" id="apiUrlInput" class="text-input" placeholder="http://your-synology-ip:8000">
+                </div>
+                <button class="btn-save-config" onclick="saveConfig()">Save Configuration</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ============================================
+        // BMG Fleet Monday.com Column IDs
+        // ============================================
+        const MONDAY_COLUMNS = {
+            VIN: 'text_mkzrg53a',
+            YEAR: 'text_mkzr3q83',
+            MAKE: 'text_mkzrxd5b',
+            MODEL: 'text_mkzrmkj8',
+            ARRIVAL_DATE: 'date_mkzrp9m1',
+            SALES_ORDER_NUMBER: 'text_mkzr8a99',
+            SALES_ORDER_STATUS: 'color_mkzv2vf3',
+            SALES_ORDER_PDF: 'file_mkzv44b3',
+            PRODUCTION_STATUS: 'color_mkzrv4bb'
+        };
+        
+        // ============================================
+        // Configuration - Updated for BMG Synology
+        // ============================================
+        const DEFAULT_API_URL = 'http://192.168.68.82:8000';
+        const NHTSA_API_URL = 'https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues';
+        
+        let API_BASE_URL = localStorage.getItem('bmg_api_url') || DEFAULT_API_URL;
+        let BOARD_ID = localStorage.getItem('bmg_board_id') || '';
+        
+        // State
+        let currentVIN = '';
+        let currentCustomer = '';
+        let selectedOrder = null;
+        let decodedVehicle = { year: '', make: '', model: '' };
+        let graphicsProof = null;
+        let mondayClient = null;
+        
+        // Monday.com SDK initialization
+        try {
+            mondayClient = window.monday;
+            mondayClient.init();
+            mondayClient.get('context').then(res => {
+                if (res.data && res.data.boardId) {
+                    BOARD_ID = res.data.boardId;
+                    localStorage.setItem('bmg_board_id', BOARD_ID);
+                }
+            });
+        } catch (e) { console.log('Monday SDK not available'); }
+        
+        // ============================================
+        // VIN Decoder (NHTSA API)
+        // ============================================
+        async function decodeVIN(vin) {
+            const card = document.getElementById('vehicleInfoCard');
+            const yearEl = document.getElementById('decodedYear');
+            const makeEl = document.getElementById('decodedMake');
+            const modelEl = document.getElementById('decodedModel');
+            
+            card.classList.add('visible');
+            yearEl.textContent = '...'; yearEl.classList.add('loading');
+            makeEl.textContent = '...'; makeEl.classList.add('loading');
+            modelEl.textContent = '...'; modelEl.classList.add('loading');
+            
+            try {
+                const response = await fetch(`${NHTSA_API_URL}/${vin}?format=json`);
+                const data = await response.json();
+                
+                if (data.Results && data.Results.length > 0) {
+                    const result = data.Results[0];
+                    decodedVehicle.year = result.ModelYear || '';
+                    decodedVehicle.make = result.Make || '';
+                    decodedVehicle.model = result.Model || '';
+                    
+                    yearEl.textContent = decodedVehicle.year || '—';
+                    makeEl.textContent = decodedVehicle.make || '—';
+                    modelEl.textContent = decodedVehicle.model || '—';
+                    
+                    yearEl.classList.remove('loading');
+                    makeEl.classList.remove('loading');
+                    modelEl.classList.remove('loading');
+                    return true;
+                }
+            } catch (error) {
+                console.error('VIN decode error:', error);
+                yearEl.textContent = '?'; makeEl.textContent = '?'; modelEl.textContent = '?';
+                yearEl.classList.remove('loading'); makeEl.classList.remove('loading'); modelEl.classList.remove('loading');
+            }
+            return false;
+        }
+        
+        // ============================================
+        // Graphics Proof Search with Thumbnails
+        // ============================================
+        async function searchGraphicsProofs(customerName, vehicleType) {
+            const card = document.getElementById('graphicsProofCard');
+            const title = document.getElementById('graphicsProofTitle');
+            const gallery = document.getElementById('graphicsProofGallery');
+            
+            // Reset
+            card.classList.remove('visible', 'not-found');
+            graphicsProof = null;
+            selectedProofIndex = -1;
+            
+            if (!customerName || !vehicleType) return;
+            
+            // Show loading state
+            card.classList.add('visible');
+            title.textContent = 'Finding Graphics Proofs...';
+            gallery.innerHTML = '<div class="proof-loading"><div class="spinner"></div>Searching...</div>';
+            
+            try {
+                const response = await fetch(
+                    `${API_BASE_URL}/graphics/proofs/all?customer=${encodeURIComponent(customerName)}&vehicle_type=${encodeURIComponent(vehicleType)}`
+                );
+                const data = await response.json();
+                
+                if (data.found && data.proofs && data.proofs.length > 0) {
+                    window.graphicsProofResults = data.proofs;
+                    title.textContent = `Graphics Proofs (${data.count} found)`;
+                    
+                    gallery.innerHTML = data.proofs.map((proof, index) => `
+                        <div class="proof-thumbnail" onclick="selectProof(${index})" data-index="${index}">
+                            ${proof.thumbnail_base64 
+                                ? `<img src="data:image/png;base64,${proof.thumbnail_base64}" alt="${proof.file_name}">`
+                                : `<div class="proof-thumbnail-placeholder"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`
+                            }
+                            ${proof.version ? `<span class="proof-thumbnail-version">v${proof.version}</span>` : ''}
+                            <span class="proof-thumbnail-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+                            <div class="proof-thumbnail-name">${proof.file_name}</div>
+                        </div>
+                    `).join('');
+                    
+                    // Auto-select first proof
+                    selectProof(0);
+                    
+                } else {
+                    card.classList.add('not-found');
+                    title.textContent = 'No Graphics Proofs Found';
+                    gallery.innerHTML = `<div style="text-align: center; padding: var(--space-md); color: var(--bmg-text-muted);">${data.error || 'No matching proof files'}</div>`;
+                }
+            } catch (error) {
+                console.log('Graphics search error:', error);
+                card.classList.remove('visible');
+            }
+        }
+        
+        let selectedProofIndex = -1;
+        
+        function selectProof(index) {
+            selectedProofIndex = index;
+            graphicsProof = window.graphicsProofResults ? window.graphicsProofResults[index] : null;
+            
+            // Update UI
+            document.querySelectorAll('.proof-thumbnail').forEach((thumb, i) => {
+                thumb.classList.toggle('selected', i === index);
+            });
+        }
+        
+        // ============================================
+        // Step Navigation
+        // ============================================
+        function updateSteps(currentStep) {
+            for (let i = 1; i <= 3; i++) {
+                const stepEl = document.getElementById(`step${i}`);
+                stepEl.classList.remove('active', 'complete');
+                if (i < currentStep) stepEl.classList.add('complete');
+                else if (i === currentStep) stepEl.classList.add('active');
+            }
+        }
+        
+        function showPanel(n) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(`panel${n}`).classList.add('active');
+            updateSteps(n);
+        }
+        
+        function goToStep1() {
+            showPanel(1);
+            document.getElementById('vinInput').focus();
+        }
+        
+        function goToStep2() {
+            const vin = document.getElementById('vinInput').value.trim().toUpperCase();
+            if (vin.length !== 17) { showVinStatus('VIN must be 17 characters', 'warning'); return; }
+            currentVIN = vin;
+            showPanel(2);
+            hideStatus();
+            hideResults();
+            hideGraphicsProof();
+            document.getElementById('customerInput').focus();
+        }
+        
+        function goToStep3() {
+            showPanel(3);
+            const details = document.getElementById('confirmationDetails');
+            const vehicleStr = [decodedVehicle.year, decodedVehicle.make, decodedVehicle.model].filter(Boolean).join(' ') || 'N/A';
+            
+            let proofHtml = '';
+            if (graphicsProof && graphicsProof.file_name) {
+                proofHtml = `<p><strong>Graphics Proof:</strong> <span class="proof-found">${graphicsProof.file_name}</span></p>`;
+            } else {
+                proofHtml = `<p><strong>Graphics Proof:</strong> <span class="proof-missing">Not found</span></p>`;
+            }
+            
+            if (selectedOrder) {
+                details.innerHTML = `
+                    <p><strong>Customer:</strong> ${selectedOrder.customer_name}</p>
+                    <p><strong>VIN:</strong> ${currentVIN}</p>
+                    <p><strong>Vehicle:</strong> ${vehicleStr}</p>
+                    <p><strong>Sales Order:</strong> ${selectedOrder.sales_order_number}</p>
+                    ${proofHtml}
+                    <p><strong>Production Status:</strong> Received</p>
+                `;
+            } else {
+                details.innerHTML = `
+                    <p><strong>Customer:</strong> ${currentCustomer}</p>
+                    <p><strong>VIN:</strong> ${currentVIN}</p>
+                    <p><strong>Vehicle:</strong> ${vehicleStr}</p>
+                    <p><strong>Sales Order:</strong> <span style="color: var(--bmg-warning);">Missing</span></p>
+                    ${proofHtml}
+                    <p><strong>Production Status:</strong> Received</p>
+                `;
+            }
+        }
+        
+        function startOver() {
+            currentVIN = ''; currentCustomer = ''; selectedOrder = null;
+            decodedVehicle = { year: '', make: '', model: '' };
+            graphicsProof = null;
+            document.getElementById('vinInput').value = '';
+            document.getElementById('customerInput').value = '';
+            document.getElementById('vehicleInfoCard').classList.remove('visible');
+            hideResults(); hideStatus(); hideVinStatus(); hideGraphicsProof();
+            goToStep1();
+        }
+        
+        // ============================================
+        // Status Messages
+        // ============================================
+        function showVinStatus(message, type) {
+            const statusEl = document.getElementById('vinStatus');
+            statusEl.className = 'status visible ' + type;
+            const icons = {
+                error: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>',
+                success: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+                warning: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+            };
+            statusEl.innerHTML = `<span class="status-icon">${icons[type] || icons.error}</span><span class="status-text">${message}</span>`;
+        }
+        
+        function hideVinStatus() { document.getElementById('vinStatus').className = 'status'; }
+        
+        function showStatus(message, type = 'error') {
+            const statusEl = document.getElementById('statusMessage');
+            const iconEl = statusEl.querySelector('.status-icon');
+            const textEl = statusEl.querySelector('.status-text');
+            statusEl.className = 'status visible ' + type;
+            textEl.textContent = message;
+            const icons = {
+                error: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>',
+                success: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+                warning: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+            };
+            iconEl.innerHTML = icons[type] || icons.error;
+        }
+        
+        function hideStatus() { document.getElementById('statusMessage').classList.remove('visible'); }
+        
+        function hideGraphicsProof() { document.getElementById('graphicsProofCard').classList.remove('visible'); }
+        
+        // ============================================
+        // Results Display
+        // ============================================
+        function showResults(orders) {
+            const section = document.getElementById('resultsSection');
+            const container = document.getElementById('resultsContainer');
+            document.getElementById('resultsCount').textContent = orders.length + ' found';
+            container.innerHTML = orders.map((order, i) => {
+                const hasGraphics = hasGraphicsLineItems(order);
+                const lineItemsHtml = order.line_items && order.line_items.length > 0 
+                    ? `<div class="line-items-toggle" onclick="event.stopPropagation(); toggleLineItems(${i})">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                        ${order.line_items.length} line items
+                       </div>
+                       <div class="line-items-container" id="lineItems${i}">
+                        ${order.line_items.map(item => `
+                            <div class="line-item">
+                                <span class="line-item-name">${item.item_name || item.description || 'Item'}</span>
+                                <span class="line-item-qty">x${item.quantity || 1}</span>
+                                <span class="line-item-amount">$${formatNumber(item.amount || 0)}</span>
+                            </div>
+                        `).join('')}
+                       </div>`
+                    : '';
+                return `
+                <div class="order-card" data-index="${i}" onclick="selectOrder(${i})">
+                    <div class="order-header">
+                        <span class="order-number">${order.sales_order_number || 'N/A'}</span>
+                        <span class="order-status">${getStatusLabel(order.status)}</span>
+                    </div>
+                    <div class="order-customer">${order.customer_name || 'Unknown Customer'}</div>
+                    <div class="order-meta">
+                        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ${formatDate(order.date)}</span>
+                    </div>
+                    ${hasGraphics ? `<div class="order-graphics-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Has Graphics</div>` : ''}
+                    <div class="order-total">$${formatNumber(order.total)}</div>
+                    ${lineItemsHtml}
+                </div>
+            `}).join('');
+            section.style.display = 'block';
+            document.getElementById('confirmBtn').style.display = 'none';
+        }
+        
+        function toggleLineItems(index) {
+            const container = document.getElementById(`lineItems${index}`);
+            container.classList.toggle('visible');
+        }
+        
+        function getStatusLabel(status) {
+            const statusMap = {
+                'A': 'Pending Approval',
+                'B': 'Pending Fulfillment',
+                'D': 'Pending Billing',
+                'E': 'Partially Fulfilled',
+                'F': 'Pending Billing/Partial'
+            };
+            return statusMap[status] || status || 'Open';
+        }
+        
+        function hasGraphicsLineItems(order) {
+            const graphicsKeywords = ['3m vinyl', 'graphics install labor', 'vinyl', 'graphics', 'wrap', 'decal'];
+            if (!order.line_items || !Array.isArray(order.line_items)) return false;
+            return order.line_items.some(item => {
+                const itemName = (item.item_name || '').toLowerCase();
+                const description = (item.description || '').toLowerCase();
+                return graphicsKeywords.some(keyword => itemName.includes(keyword) || description.includes(keyword));
+            });
+        }
+        
+        function hideResults() {
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('resultsContainer').innerHTML = '';
+        }
+        
+        async function selectOrder(index) {
+            document.querySelectorAll('.order-card').forEach((card, i) => card.classList.toggle('selected', i === index));
+            selectedOrder = window.lastSearchResults[index];
+            document.getElementById('confirmBtn').style.display = 'flex';
+            
+            // Search for graphics proofs if the order has graphics line items
+            if (selectedOrder && selectedOrder.customer_name) {
+                // Use the decoded vehicle model as vehicle type, or memo field
+                const vehicleType = decodedVehicle.model || selectedOrder.memo || '';
+                if (vehicleType && hasGraphicsLineItems(selectedOrder)) {
+                    await searchGraphicsProofs(selectedOrder.customer_name, vehicleType);
+                } else {
+                    hideGraphicsProof();
+                }
+            }
+        }
+        
+        // ============================================
+        // API Calls
+        // ============================================
+        async function searchCustomer() {
+            const customerName = document.getElementById('customerInput').value.trim();
+            if (!customerName) { showStatus('Please enter a customer name', 'warning'); return; }
+            currentCustomer = customerName;
+            const btn = document.getElementById('searchBtn');
+            btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Searching...';
+            hideStatus(); hideResults(); hideGraphicsProof();
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/sales-orders/customer/${encodeURIComponent(customerName)}`);
+                const data = await response.json();
+                if (data.found && data.data && data.data.length > 0) {
+                    window.lastSearchResults = data.data;
+                    showStatus(`Found ${data.count} open sales order(s)`, 'success');
+                    showResults(data.data);
+                } else {
+                    showStatus(data.alert_message || 'No open sales orders found', 'warning');
+                    document.getElementById('resultsSection').style.display = 'block';
+                    document.getElementById('resultsContainer').innerHTML = `
+                        <div style="text-align: center; padding: var(--space-lg); color: var(--bmg-text-muted);">
+                            <p style="margin-bottom: var(--space-md);">No sales orders found for "${customerName}"</p>
+                            <button class="btn btn-secondary" onclick="createMissingItem()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                                Check In Anyway (Missing SO)
+                            </button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                showStatus(`Cannot connect to API at ${API_BASE_URL}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg> Search Sales Orders';
+            }
+        }
+        
+        async function confirmSelection() {
+            if (!selectedOrder) { showStatus('Please select a sales order', 'warning'); return; }
+            const btn = document.getElementById('confirmBtn');
+            btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Creating item...';
+            
+            try {
+                await createMondayItem(selectedOrder, null, null);
+                goToStep3();
+            } catch (error) {
+                console.error('Confirmation error:', error);
+                showStatus('Error creating item: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Confirm Selection';
+            }
+        }
+        
+        async function createMissingItem() {
+            selectedOrder = null;
+            try { await createMondayItem(null, null, null); goToStep3(); }
+            catch (error) { showStatus('Error creating item: ' + error.message, 'error'); }
+        }
+        
+        // ============================================
+        // Monday.com Integration
+        // ============================================
+        async function createMondayItem(order, pdfBase64, pdfFilename) {
+            const today = new Date().toISOString().split('T')[0];
+            
+            const columnValues = {
+                [MONDAY_COLUMNS.VIN]: currentVIN,
+                [MONDAY_COLUMNS.YEAR]: decodedVehicle.year || '',
+                [MONDAY_COLUMNS.MAKE]: decodedVehicle.make || '',
+                [MONDAY_COLUMNS.MODEL]: decodedVehicle.model || '',
+                [MONDAY_COLUMNS.ARRIVAL_DATE]: { date: today },
+                [MONDAY_COLUMNS.PRODUCTION_STATUS]: { label: 'Received' },
+                [MONDAY_COLUMNS.SALES_ORDER_STATUS]: { label: order ? 'Found' : 'Missing' }
+            };
+            
+            if (order && order.sales_order_number) {
+                columnValues[MONDAY_COLUMNS.SALES_ORDER_NUMBER] = order.sales_order_number;
+            }
+            
+            const itemName = order ? order.customer_name : currentCustomer;
+            
+            if (!mondayClient) {
+                console.log('Monday SDK not available - would create item:', { name: itemName, columns: columnValues, hasProof: !!graphicsProof });
+                return;
+            }
+            
+            if (!BOARD_ID) throw new Error('Board ID not found. View this from within Monday.com.');
+            
+            try {
+                const columnValuesStr = JSON.stringify(columnValues).replace(/"/g, '\\"');
+                const createResult = await mondayClient.api(`
+                    mutation {
+                        create_item (
+                            board_id: ${BOARD_ID},
+                            item_name: "${itemName.replace(/"/g, '\\"')}",
+                            column_values: "${columnValuesStr}"
+                        ) { id }
+                    }
+                `);
+                
+                const itemId = createResult.data.create_item.id;
+                console.log('Created Monday.com item:', itemId);
+                
+                if (graphicsProof && graphicsProof.file_name) console.log('Graphics proof available:', graphicsProof.file_name);
+                
+                mondayClient.execute('notice', { message: `Vehicle checked in: ${itemName}`, type: 'success', timeout: 5000 });
+            } catch (apiError) {
+                console.error('Monday.com API error:', apiError);
+                throw new Error('Failed to create Monday.com item');
+            }
+        }
+        
+        // ============================================
+        // Configuration
+        // ============================================
+        function toggleConfig() {
+            const panel = document.getElementById('configPanel');
+            panel.classList.toggle('visible');
+            if (panel.classList.contains('visible')) document.getElementById('apiUrlInput').value = API_BASE_URL;
+        }
+        
+        function saveConfig() {
+            const url = document.getElementById('apiUrlInput').value.trim();
+            if (url) { API_BASE_URL = url.replace(/\/$/, ''); localStorage.setItem('bmg_api_url', API_BASE_URL); }
+            showVinStatus('Configuration saved!', 'success');
+            setTimeout(hideVinStatus, 2000);
+            toggleConfig();
+        }
+        
+        // ============================================
+        // Utilities
+        // ============================================
+        function formatNumber(num) {
+            if (num === null || num === undefined) return '0.00';
+            return parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            try { return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+            catch { return dateStr; }
+        }
+        
+        // ============================================
+        // Event Listeners
+        // ============================================
+        document.getElementById('vinInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') goToStep2(); });
+        document.getElementById('customerInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') searchCustomer(); });
+        document.getElementById('vinInput').addEventListener('input', async (e) => {
+            const vin = e.target.value.trim().toUpperCase();
+            if (vin.length < 17) { document.getElementById('vehicleInfoCard').classList.remove('visible'); hideVinStatus(); return; }
+            if (vin.length === 17) await decodeVIN(vin);
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedUrl = localStorage.getItem('bmg_api_url'); if (savedUrl) API_BASE_URL = savedUrl;
+            document.getElementById('vinInput').focus();
+        });
+    </script>
+</body>
+</html>

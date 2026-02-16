@@ -1,0 +1,29 @@
+# BMG Fleet NetSuite API Service
+# Docker Compose for Synology deployment
+
+version: '3.8'
+
+services:
+  netsuite-api:
+    build: .
+    container_name: bmg-netsuite-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - /volume1/homes/cgeorge/OFFICE/Clients:/volume1/homes/cgeorge/OFFICE/Clients:ro
+    environment:
+      - TZ=America/Chicago  # O'Fallon, MO timezone
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
