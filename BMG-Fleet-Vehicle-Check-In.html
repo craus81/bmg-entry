@@ -1,331 +1,1308 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="BMG Check-In">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#0f0f1a">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0a1628">
+    <meta name="color-scheme" content="dark light">
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icon-192.png">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BMG Fleet - Vehicle Check-In</title>
     <script src="https://cdn.jsdelivr.net/npm/monday-sdk-js/dist/main.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        :root { --bmg-primary: #e94560; --bmg-primary-dark: #c83b52; --bmg-accent: #e94560; --bmg-accent-light: #ff6b6b; --bmg-success: #00d68f; --bmg-warning: #ffaa00; --bmg-info: #4dabf7; --bmg-surface: #0f0f1a; --bmg-surface-elevated: #1f1f3a; --bmg-text: #edf2f7; --bmg-text-muted: #a0aec0; --bmg-border: rgba(255,255,255,0.08); --font-display: 'Outfit', sans-serif; --font-mono: 'JetBrains Mono', monospace; }
+        /* BMG Ops Design System - Dark & Light Mode */
+        :root {
+            /* Dark Mode (default) */
+            --bg: #0a1628;
+            --card: #0d1f35;
+            --border: #1e2d3d;
+            --navy: #ee3120;
+            --navy-light: #5b9bd5;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #64748b;
+            --success: #34d399;
+            --success-bg: rgba(52, 211, 153, 0.08);
+            --warning: #fbbf24;
+            --warning-bg: rgba(251, 191, 36, 0.08);
+            --error: #f87171;
+            --error-bg: rgba(248, 113, 113, 0.08);
+            --tab-active-bg: rgba(238, 49, 32, 0.06);
+            --logo-display-dark: block;
+            --logo-display-light: none;
+        }
+
+        [data-theme="light"] {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --navy: #ee3120;
+            --navy-light: #1e5a8a;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --success-bg: rgba(16, 185, 129, 0.1);
+            --warning: #f59e0b;
+            --warning-bg: rgba(245, 158, 11, 0.1);
+            --error: #ef4444;
+            --error-bg: rgba(239, 68, 68, 0.1);
+            --tab-active-bg: rgba(238, 49, 32, 0.08);
+            --logo-display-dark: none;
+            --logo-display-light: block;
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root:not([data-theme="dark"]) {
+                --bg: #f8fafc;
+                --card: #ffffff;
+                --border: #e2e8f0;
+                --navy: #ee3120;
+                --navy-light: #1e5a8a;
+                --text-primary: #0f172a;
+                --text-secondary: #475569;
+                --text-muted: #94a3b8;
+                --success: #10b981;
+                --success-bg: rgba(16, 185, 129, 0.1);
+                --warning: #f59e0b;
+                --warning-bg: rgba(245, 158, 11, 0.1);
+                --error: #ef4444;
+                --error-bg: rgba(239, 68, 68, 0.1);
+                --tab-active-bg: rgba(238, 49, 32, 0.08);
+                --logo-display-dark: none;
+                --logo-display-light: block;
+            }
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: var(--font-display); background: var(--bmg-surface); color: var(--bmg-text); min-height: 100vh; padding: 16px; }
-        .container { max-width: 520px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--bmg-border); }
-        .logo { font-size: 1.5rem; font-weight: 700; } .logo span { color: var(--bmg-accent); }
-        .subtitle { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--bmg-text-muted); }
-        .steps { display: flex; justify-content: center; gap: 16px; margin-bottom: 24px; }
-        .step { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--bmg-text-muted); }
-        .step.active { color: var(--bmg-accent); } .step.complete { color: var(--bmg-success); }
-        .step-number { width: 24px; height: 24px; border-radius: 50%; background: var(--bmg-surface-elevated); border: 2px solid currentColor; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.7rem; }
-        .step.complete .step-number { background: var(--bmg-success); border-color: var(--bmg-success); color: white; }
-        .input-group { margin-bottom: 16px; }
-        .input-label { display: block; font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--bmg-text-muted); margin-bottom: 8px; }
-        input[type="text"] { width: 100%; padding: 16px 16px 16px 48px; background: var(--bmg-surface-elevated); border: 2px solid var(--bmg-border); border-radius: 12px; color: var(--bmg-text); font-family: var(--font-mono); font-size: 1rem; }
-        input[type="text"].text-input { font-family: var(--font-display); }
-        input[type="text"]:focus { outline: none; border-color: var(--bmg-accent); }
-        input::placeholder { color: var(--bmg-text-muted); opacity: 0.5; }
-        #vinInput { text-transform: uppercase; }
-        .input-wrapper { position: relative; } .input-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--bmg-text-muted); }
-        .btn { width: 100%; padding: 16px 24px; border: none; border-radius: 12px; font-family: var(--font-display); font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-primary { background: linear-gradient(135deg, var(--bmg-accent), var(--bmg-accent-light)); color: white; }
-        .btn-primary:hover { transform: translateY(-2px); }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .btn-secondary { background: var(--bmg-surface-elevated); border: 2px solid var(--bmg-border); color: var(--bmg-text); }
-        .btn .spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 16px;
+            padding-top: max(16px, env(safe-area-inset-top));
+            padding-bottom: max(16px, env(safe-area-inset-bottom));
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .container { max-width: 480px; margin: 0 auto; }
+
+        /* Header with Logo */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-container {
+            height: 40px;
+        }
+
+        .logo-container img {
+            height: 100%;
+            width: auto;
+        }
+
+        .logo-dark { display: var(--logo-display-dark); }
+        .logo-light { display: var(--logo-display-light); }
+
+        .theme-toggle {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--navy);
+            color: var(--navy);
+        }
+
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Section Label */
+        .section-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 12px;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        .card-success {
+            border-color: rgba(52, 211, 153, 0.3);
+            background: var(--success-bg);
+        }
+
+        .card-info {
+            border-color: #2a4a6f;
+        }
+
+        /* Tab Switcher */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--card);
+            border-radius: 10px;
+            padding: 3px;
+            margin-bottom: 12px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: var(--tab-active-bg);
+            color: var(--navy);
+        }
+
+        /* Step Indicator */
+        .steps {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .step.active { color: var(--navy); }
+        .step.complete { color: var(--success); }
+
+        .step-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--card);
+            border: 2px solid currentColor;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 11px;
+        }
+
+        .step.complete .step-number {
+            background: var(--success);
+            border-color: var(--success);
+            color: #fff;
+        }
+
+        /* Input Groups */
+        .input-group { margin-bottom: 12px; }
+
+        .input-label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 14px;
+            padding-left: 44px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--navy);
+        }
+
+        input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            width: 18px;
+            height: 18px;
+        }
+
+        #vinInput {
+            text-transform: uppercase;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 16px;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        /* Character Count */
+        .char-count {
+            text-align: center;
+            margin-top: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .char-count.valid { color: var(--success); }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--navy);
+            color: #fff;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-weight: 700;
+            font-size: 13px;
+            padding: 10px 16px;
+        }
+
+        .btn-ghost {
+            background: var(--tab-active-bg);
+            border: 1px solid rgba(238, 49, 32, 0.15);
+            color: var(--navy);
+            font-weight: 700;
+        }
+
+        .btn .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
         @keyframes spin { to { transform: rotate(360deg); } }
-        .status { margin-top: 16px; padding: 16px; border-radius: 10px; font-size: 0.875rem; display: none; }
+
+        /* Status Messages */
+        .status {
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: none;
+        }
+
         .status.visible { display: block; }
-        .status.error { background: rgba(233,69,96,0.15); border: 1px solid rgba(233,69,96,0.3); color: var(--bmg-accent-light); }
-        .status.success { background: rgba(0,214,143,0.15); border: 1px solid rgba(0,214,143,0.3); color: var(--bmg-success); }
-        .status.warning { background: rgba(255,170,0,0.15); border: 1px solid rgba(255,170,0,0.3); color: var(--bmg-warning); }
-        .vehicle-info-card { background: var(--bmg-surface-elevated); border: 2px solid var(--bmg-success); border-radius: 12px; padding: 16px; margin-top: 16px; display: none; }
-        .vehicle-info-card.visible { display: block; }
-        .vehicle-info-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; color: var(--bmg-success); font-weight: 600; }
-        .vehicle-info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-        .vehicle-info-item { background: var(--bmg-surface); padding: 8px; border-radius: 8px; text-align: center; }
-        .vehicle-info-label { font-size: 0.65rem; text-transform: uppercase; color: var(--bmg-text-muted); }
-        .vehicle-info-value { font-size: 1rem; font-weight: 600; }
-        .graphics-card { background: var(--bmg-surface-elevated); border: 2px solid var(--bmg-info); border-radius: 12px; padding: 16px; margin-top: 16px; display: none; }
-        .graphics-card.visible { display: block !important; }
-        .graphics-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; color: var(--bmg-info); font-weight: 600; }
-        .folder-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        .folder-btn { background: var(--bmg-surface); border: 2px solid var(--bmg-border); border-radius: 8px; padding: 12px; cursor: pointer; text-align: left; transition: all 0.2s; }
-        .folder-btn:hover { border-color: var(--bmg-info); }
-        .folder-btn.selected { border-color: var(--bmg-success); background: rgba(0,214,143,0.1); }
-        .folder-name { font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; }
-        .folder-count { font-size: 0.7rem; color: var(--bmg-text-muted); }
-        .proof-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-top: 16px; max-height: 300px; overflow-y: auto; }
-        .proof-thumb { background: var(--bmg-surface); border: 2px solid var(--bmg-border); border-radius: 8px; padding: 4px; cursor: pointer; position: relative; }
-        .proof-thumb:hover { border-color: var(--bmg-info); }
-        .proof-thumb.selected { border-color: var(--bmg-success); }
-        .proof-thumb img { width: 100%; height: 100px; object-fit: contain; background: white; border-radius: 4px; }
-        .proof-thumb-placeholder { width: 100%; height: 100px; display: flex; align-items: center; justify-content: center; background: var(--bmg-surface-elevated); border-radius: 4px; color: var(--bmg-text-muted); font-size: 0.7rem; }
-        .proof-thumb-name { font-size: 0.6rem; color: var(--bmg-text-muted); margin-top: 4px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .proof-thumb-version { position: absolute; top: 4px; right: 4px; background: var(--bmg-accent); color: white; font-size: 0.55rem; padding: 2px 5px; border-radius: 4px; }
-        .proof-thumb-check { position: absolute; bottom: 24px; right: 4px; background: var(--bmg-success); color: white; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 10px; }
+        .status.error { background: var(--error-bg); border: 1px solid rgba(248,113,113,0.15); color: var(--error); }
+        .status.success { background: var(--success-bg); border: 1px solid rgba(52,211,153,0.15); color: var(--success); }
+        .status.warning { background: var(--warning-bg); border: 1px solid rgba(251,191,36,0.15); color: var(--warning); }
+
+        /* Vehicle Info Card */
+        .vehicle-info {
+            display: none;
+        }
+
+        .vehicle-info.visible { display: block; }
+
+        .vehicle-info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .vehicle-info-item {
+            background: var(--bg);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .vehicle-info-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .vehicle-info-value {
+            font-size: 15px;
+            font-weight: 800;
+            margin-top: 2px;
+        }
+
+        /* Results Section */
+        .results { display: none; margin-top: 16px; }
+        .results.visible { display: block; }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .results-title { font-weight: 700; font-size: 14px; }
+
+        .results-count {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: var(--card);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        /* Order Cards */
+        .order-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .order-card:hover { border-color: var(--navy); }
+        .order-card.selected { 
+            border-color: var(--success); 
+            background: var(--success-bg);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .order-number {
+            font-family: 'SF Mono', Monaco, monospace;
+            font-weight: 800;
+            font-size: 14px;
+            color: var(--navy);
+        }
+
+        .order-status {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .order-customer {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .order-vin {
+            font-family: monospace;
+            font-size: 11px;
+            color: var(--navy-light);
+        }
+
+        /* Graphics Section */
+        .graphics-section {
+            display: none;
+            margin-top: 16px;
+        }
+
+        .graphics-section.visible { display: block; }
+
+        .graphics-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--navy-light);
+            margin-bottom: 12px;
+        }
+
+        .folder-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .folder-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            color: var(--text-primary);
+        }
+
+        .folder-btn:hover { border-color: var(--navy-light); }
+        .folder-btn.selected { border-color: var(--success); background: var(--success-bg); }
+
+        .folder-name { font-weight: 700; font-size: 13px; }
+        .folder-count { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        .proof-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .proof-thumb {
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 4px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .proof-thumb:hover { border-color: var(--navy-light); }
+        .proof-thumb.selected { border-color: var(--success); }
+
+        .proof-thumb img {
+            width: 100%;
+            height: 80px;
+            object-fit: contain;
+            background: #fff;
+            border-radius: 6px;
+        }
+
+        .proof-thumb-placeholder {
+            width: 100%;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--card);
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-size: 10px;
+        }
+
+        .proof-thumb-name {
+            font-size: 9px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .proof-thumb-version {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: var(--navy);
+            color: #fff;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .proof-thumb-check {
+            position: absolute;
+            bottom: 28px;
+            right: 6px;
+            background: var(--success);
+            color: #fff;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
         .proof-thumb.selected .proof-thumb-check { display: flex; }
-        .proof-loading { text-align: center; padding: 24px; color: var(--bmg-text-muted); }
-        .proof-loading .spinner { width: 24px; height: 24px; border: 2px solid var(--bmg-border); border-top-color: var(--bmg-info); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 8px; }
-        .back-link { display: inline-flex; align-items: center; gap: 4px; color: var(--bmg-text-muted); font-size: 0.75rem; cursor: pointer; margin-bottom: 12px; }
-        .back-link:hover { color: var(--bmg-info); }
-        .results { margin-top: 24px; }
-        .results-header { display: flex; justify-content: space-between; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--bmg-border); }
-        .results-title { font-weight: 600; }
-        .results-count { font-size: 0.75rem; color: var(--bmg-text-muted); background: var(--bmg-surface-elevated); padding: 4px 8px; border-radius: 20px; }
-        .order-card { background: var(--bmg-surface-elevated); border: 2px solid var(--bmg-border); border-radius: 12px; padding: 16px; margin-bottom: 12px; cursor: pointer; }
-        .order-card:hover { border-color: var(--bmg-accent); }
-        .order-card.selected { border-color: var(--bmg-success); background: rgba(0,214,143,0.05); }
-        .order-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .order-number { font-family: var(--font-mono); font-weight: 600; color: var(--bmg-accent); }
-        .order-status { font-size: 0.7rem; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; background: rgba(0,214,143,0.15); color: var(--bmg-success); }
-        .order-customer { margin-bottom: 8px; }
-        .order-total { text-align: right; font-family: var(--font-mono); font-size: 1.1rem; font-weight: 600; color: var(--bmg-success); }
-        .order-vin { font-family: var(--font-mono); font-size: 0.8rem; color: var(--bmg-info); margin-bottom: 4px; }
-        .order-graphics { display: inline-flex; align-items: center; gap: 4px; font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; background: rgba(77,171,247,0.15); color: var(--bmg-info); margin-top: 8px; }
-        .confirmation-panel { background: var(--bmg-surface-elevated); border: 2px solid var(--bmg-success); border-radius: 12px; padding: 24px; text-align: center; }
-        .confirmation-icon { width: 64px; height: 64px; margin: 0 auto 16px; background: rgba(0,214,143,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--bmg-success); font-size: 32px; }
-        .confirmation-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 16px; }
-        .confirmation-details { text-align: left; margin-bottom: 24px; font-size: 0.875rem; color: var(--bmg-text-muted); }
-        .confirmation-details p { margin-bottom: 4px; }
-        .confirmation-details strong { color: var(--bmg-text); }
-        .config-section { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--bmg-border); }
-        .config-toggle { display: flex; align-items: center; gap: 8px; color: var(--bmg-text-muted); font-size: 0.75rem; cursor: pointer; }
-        .config-panel { display: none; margin-top: 16px; padding: 16px; background: var(--bmg-surface-elevated); border-radius: 10px; }
-        .config-panel.visible { display: block; }
-        .btn-save { margin-top: 16px; padding: 8px 16px; background: var(--bmg-success); border: none; border-radius: 8px; color: white; font-size: 0.8rem; cursor: pointer; width: 100%; }
-        .panel { display: none; } .panel.active { display: block; }
-        .button-row { display: flex; gap: 8px; margin-top: 16px; } .button-row .btn { flex: 1; }
-        .hint { text-align: center; font-size: 0.7rem; color: var(--bmg-text-muted); margin-top: 16px; }
-    
-        /* VIN Scanner Styles */
-        .camera-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: var(--bmg-primary); border: none; border-radius: 8px; padding: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .camera-btn svg { color: white; }
-        .camera-btn:hover { background: var(--bmg-primary-dark); }
-        .scanner-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #000; z-index: 9999; display: none; flex-direction: column; }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+
+        .back-link:hover { color: var(--navy-light); }
+
+        /* Confirmation Panel */
+        .confirmation {
+            text-align: center;
+            padding: 32px 0;
+        }
+
+        .confirmation-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--success-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 28px;
+            color: var(--success);
+        }
+
+        .confirmation-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .confirmation-details {
+            text-align: left;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+
+        .confirmation-details p {
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+        }
+
+        .confirmation-details strong {
+            color: var(--text-primary);
+        }
+
+        /* Camera Button */
+        .camera-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--navy);
+            border: none;
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .camera-btn svg { color: #fff; }
+
+        /* Scanner Overlay */
+        .scanner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+        }
+
         .scanner-overlay.visible { display: flex !important; }
-        .scanner-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); }
-        .scanner-header h3 { color: white; margin: 0; }
-        .scanner-close { background: var(--bmg-danger); border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; }
-        .scanner-video-container { flex: 1; position: relative; overflow: hidden; }
-        .scanner-video-container video { width: 100%; height: 100%; object-fit: cover; }
-        .scanner-guide { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 400px; height: 60px; border: 3px solid var(--bmg-primary); border-radius: 8px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); }
-        .scanner-guide::before { content: "Position VIN barcode here"; position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); color: white; font-size: 14px; white-space: nowrap; }
-        .scanner-capture-btn { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 70px; height: 70px; border-radius: 50%; background: white; border: 4px solid var(--bmg-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .scanner-capture-btn:active { transform: translateX(-50%) scale(0.95); }
-        .scanner-capture-btn svg { color: var(--bmg-primary); }
-        .scanner-preview { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #000; }
-        .scanner-preview.visible { display: flex; flex-direction: column; }
-        .scanner-preview img { flex: 1; object-fit: contain; }
-        .scanner-preview-actions { display: flex; gap: 12px; padding: 16px; background: rgba(0,0,0,0.9); }
-        .scanner-preview-actions button { flex: 1; padding: 14px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; font-size: 1rem; }
-        .scanner-retake { background: var(--bmg-surface); color: var(--bmg-text); }
-        .scanner-process { background: var(--bmg-primary); color: white; }
-        .scanner-result { padding: 16px; background: rgba(0,0,0,0.8); }
-        .scanner-result input { width: 100%; padding: 12px; font-size: 18px; font-family: var(--font-mono); text-align: center; border-radius: 8px; border: 2px solid var(--bmg-border); background: var(--bmg-surface); color: var(--bmg-text); }
-        .scanner-actions { display: flex; gap: 12px; margin-top: 12px; }
-        .scanner-actions button { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; }
-        .scanner-use { background: var(--bmg-primary); color: white; }
-        .scanner-retry { background: var(--bmg-surface); color: var(--bmg-text); border: 1px solid var(--bmg-border) !important; }
+
+        .scanner-header {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.9);
+        }
+
+        .scanner-header h3 { color: #fff; font-size: 16px; font-weight: 700; }
+
+        .scanner-close {
+            background: var(--error);
+            border: none;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .scanner-video-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scanner-video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .scanner-guide {
+            position: absolute;
+            top: 50%;
+            left: 3%;
+            right: 3%;
+            height: 70px;
+            margin-top: -35px;
+            border: 3px solid rgba(238, 49, 32, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+            pointer-events: none;
+        }
+
+        .scanner-guide::after {
+            content: "Position VIN barcode here";
+            position: absolute;
+            bottom: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .scanner-capture-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #fff;
+            border: 4px solid var(--navy);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scanner-capture-btn svg { color: var(--navy); }
+
+        .scanner-result {
+            padding: 16px;
+            background: rgba(0,0,0,0.9);
+        }
+
+        .scanner-result input {
+            width: 100%;
+            padding: 14px;
+            font-size: 18px;
+            font-family: monospace;
+            text-align: center;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text-primary);
+        }
+
+        .scanner-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .scanner-actions button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+        }
+
+        .scanner-retry {
+            background: var(--card);
+            color: var(--text-secondary);
+            border: 1px solid var(--border) !important;
+        }
+
+        .scanner-use {
+            background: var(--navy);
+            color: #fff;
+        }
+
+        /* Settings Section */
+        .settings-section {
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .settings-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .settings-panel {
+            display: none;
+            margin-top: 16px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .settings-panel.visible { display: block; }
+
+        .settings-panel input {
+            padding-left: 14px !important;
+        }
+
+        /* Panels */
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* Button Row */
+        .button-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .button-row .btn { flex: 1; }
+
+        /* Loading Spinner */
+        .loading {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .loading-spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid var(--border);
+            border-top-color: var(--navy);
+            border-radius: 50%;
+            margin: 0 auto;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            color: var(--navy-light);
+            font-weight: 600;
+            margin-top: 12px;
+            font-size: 13px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 32px 0;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 36px;
+            margin-bottom: 8px;
+            opacity: 0.4;
+        }
+
+        .empty-state-text {
+            font-weight: 600;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <header class="header"><h1 class="logo">BMG <span>Fleet</span></h1><p class="subtitle">Vehicle Check-In</p></header>
+        <!-- Header with Logo & Theme Toggle -->
+        <header class="header">
+            <div class="logo-container">
+                <img src="/bmg-logo-white.png" alt="BMG Fleet" class="logo-dark">
+                <img src="/bmg-logo-color.png" alt="BMG Fleet" class="logo-light">
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+                <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"/>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+            </button>
+        </header>
+
+        <!-- Steps -->
         <div class="steps">
             <div class="step active" id="step1"><span class="step-number">1</span><span>VIN</span></div>
             <div class="step" id="step2"><span class="step-number">2</span><span>Customer</span></div>
             <div class="step" id="step3"><span class="step-number">3</span><span>Confirm</span></div>
         </div>
-        
+
+        <!-- Panel 1: VIN Entry -->
         <div id="panel1" class="panel active">
+            <div class="section-label">Scan VIN</div>
+            
             <div class="input-group">
                 <label class="input-label">Vehicle Identification Number</label>
                 <div class="input-wrapper">
-                    <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                    <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <path d="M3 9h18M9 21V9"/>
+                    </svg>
                     <input type="text" id="vinInput" placeholder="Scan or enter VIN..." maxlength="17" autocomplete="off" autofocus>
-                    <button type="button" class="camera-btn" onclick="openScanner()" title="Scan VIN with camera"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
+                    <button type="button" class="camera-btn" onclick="openScanner()" title="Scan VIN">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                            <circle cx="12" cy="13" r="4"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
-            <div id="vehicleInfoCard" class="vehicle-info-card">
-                <div class="vehicle-info-header">✓ Vehicle Identified</div>
-                <div class="vehicle-info-grid">
-                    <div class="vehicle-info-item"><div class="vehicle-info-label">Year</div><div class="vehicle-info-value" id="decodedYear">—</div></div>
-                    <div class="vehicle-info-item"><div class="vehicle-info-label">Make</div><div class="vehicle-info-value" id="decodedMake">—</div></div>
-                    <div class="vehicle-info-item"><div class="vehicle-info-label">Model</div><div class="vehicle-info-value" id="decodedModel">—</div></div>
-                </div>
-            </div>
-            <div id="vinStatus" class="status"></div>
-            <button class="btn btn-primary" onclick="goToStep2()" style="margin-top:16px;">Next: Customer →</button>
-            <p class="hint">VIN must be 17 characters</p>
-        </div>
-        
-        <div id="panel2" class="panel">
-            <div class="input-group">
-                <label class="input-label">Customer Name (Sales Order)</label>
-                <div class="input-wrapper">
-                    <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                    <input type="text" id="customerInput" class="text-input" placeholder="Search customer for sales order..." autocomplete="off">
-                </div>
-            </div>
-            <button class="btn btn-primary" id="searchBtn" onclick="searchCustomer()">🔍 Search Sales Orders</button>
-            <div class="input-group" style="margin-top: 16px;">
-                <label class="input-label">End User (Graphics) <span style="font-weight:normal;text-transform:none;font-size:0.7rem;color:var(--bmg-text-muted);">- Leave blank if same as customer</span></label>
-                <div class="input-wrapper">
-                    <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                    <input type="text" id="endUserInput" class="text-input" placeholder="End user for graphics (e.g. Jerry Kelly)..." autocomplete="off">
-                </div>
-            </div>
-            <button class="btn btn-secondary" id="loadGraphicsBtn" onclick="loadEndUserGraphics()" style="margin-top:8px;">📁 Load Graphics for End User</button>
-            <div class="button-row"><button class="btn btn-secondary" onclick="goToStep1()">← Back</button></div>
-            <div id="statusMessage" class="status"></div>
             
-            <div id="graphicsCard" class="graphics-card">
-                <div class="graphics-header">🖼️ <span id="graphicsTitle">Graphics Proofs</span></div>
+            <div id="charCount" class="char-count">0/17</div>
+
+            <div id="vehicleInfo" class="card card-success vehicle-info">
+                <div style="display: flex; align-items: center; gap: 8px; color: var(--success); font-weight: 700; font-size: 13px;">
+                    <span>✓</span> Vehicle Identified
+                </div>
+                <div class="vehicle-info-grid">
+                    <div class="vehicle-info-item">
+                        <div class="vehicle-info-label">Year</div>
+                        <div class="vehicle-info-value" id="decodedYear">—</div>
+                    </div>
+                    <div class="vehicle-info-item">
+                        <div class="vehicle-info-label">Make</div>
+                        <div class="vehicle-info-value" id="decodedMake">—</div>
+                    </div>
+                    <div class="vehicle-info-item">
+                        <div class="vehicle-info-label">Model</div>
+                        <div class="vehicle-info-value" id="decodedModel">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="vinStatus" class="status"></div>
+
+            <button class="btn btn-primary" onclick="goToStep2()" style="margin-top: 16px;">Next: Customer →</button>
+        </div>
+
+        <!-- Panel 2: Customer Search -->
+        <div id="panel2" class="panel">
+            <div class="section-label">Customer & Sales Order</div>
+
+            <div class="input-group">
+                <label class="input-label">Customer Name</label>
+                <div class="input-wrapper">
+                    <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                    </svg>
+                    <input type="text" id="customerInput" placeholder="Search customer..." autocomplete="off">
+                </div>
+            </div>
+
+            <button class="btn btn-primary" id="searchBtn" onclick="searchCustomer()">
+                🔍 Search Sales Orders
+            </button>
+
+            <div class="input-group" style="margin-top: 16px;">
+                <label class="input-label">End User (Graphics) <span style="font-weight: 400; text-transform: none; font-size: 10px; color: var(--text-muted);">— if different from customer</span></label>
+                <div class="input-wrapper">
+                    <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    <input type="text" id="endUserInput" placeholder="End user for graphics..." autocomplete="off">
+                </div>
+            </div>
+
+            <button class="btn btn-ghost" id="loadGraphicsBtn" onclick="loadEndUserGraphics()">
+                📁 Load Graphics for End User
+            </button>
+
+            <div class="button-row">
+                <button class="btn btn-secondary" onclick="goToStep1()">← Back</button>
+            </div>
+
+            <div id="statusMessage" class="status"></div>
+
+            <!-- Graphics Section -->
+            <div id="graphicsSection" class="graphics-section card">
+                <div class="graphics-header">
+                    🖼️ <span id="graphicsTitle">Graphics Proofs</span>
+                </div>
                 <div id="graphicsContent"></div>
             </div>
-            
-            <div id="resultsSection" class="results" style="display:none;">
-                <div class="results-header"><span class="results-title">Sales Orders</span><span class="results-count" id="resultsCount">0</span></div>
+
+            <!-- Results Section -->
+            <div id="resultsSection" class="results">
+                <div class="results-header">
+                    <span class="results-title">Sales Orders</span>
+                    <span class="results-count" id="resultsCount">0</span>
+                </div>
                 <div id="resultsContainer"></div>
-                <button class="btn btn-primary" id="confirmBtn" style="display:none;" onclick="confirmSelection()">✓ Confirm</button>
+                <button class="btn btn-success" id="confirmBtn" style="display: none; margin-top: 12px;" onclick="confirmSelection()">
+                    ✓ Confirm Selection
+                </button>
             </div>
         </div>
-        
+
+        <!-- Panel 3: Confirmation -->
         <div id="panel3" class="panel">
-            <div class="confirmation-panel">
+            <div class="confirmation">
                 <div class="confirmation-icon">✓</div>
-                <h2 class="confirmation-title">Vehicle Checked In!</h2>
+                <div class="confirmation-title">Vehicle Checked In!</div>
                 <div class="confirmation-details" id="confirmationDetails"></div>
-                <button class="btn btn-primary" onclick="startOver()">↻ Check In Another</button>
+                <button class="btn btn-primary" onclick="startOver()">↻ Check In Another Vehicle</button>
             </div>
         </div>
-        
-        <div class="config-section">
-            <div class="config-toggle" onclick="toggleConfig()">⚙️ Settings</div>
-            <div id="configPanel" class="config-panel">
-                <div class="input-group"><label class="input-label">BMG API URL</label><input type="text" id="apiUrlInput" class="text-input" style="padding-left:16px;"></div>
-                <div class="input-group"><label class="input-label">Monday.com API Token</label><input type="text" id="mondayTokenInput" class="text-input" style="padding-left:16px;" placeholder="Enter your Monday.com API token"></div>
-                <button class="btn-save" onclick="saveConfig()">Save</button>
+
+        <!-- Settings -->
+        <div class="settings-section">
+            <div class="settings-toggle" onclick="toggleSettings()">⚙️ Settings</div>
+            <div id="settingsPanel" class="settings-panel">
+                <div class="input-group">
+                    <label class="input-label">API URL</label>
+                    <input type="text" id="apiUrlInput" placeholder="https://...">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Monday.com API Token</label>
+                    <input type="text" id="mondayTokenInput" placeholder="Enter token...">
+                </div>
+                <button class="btn btn-success" onclick="saveSettings()" style="margin-top: 12px;">Save Settings</button>
             </div>
         </div>
     </div>
-    
+
+    <!-- Scanner Overlay -->
+    <div id="scannerOverlay" class="scanner-overlay">
+        <div class="scanner-header">
+            <h3>📷 Scan VIN Barcode</h3>
+            <button class="scanner-close" onclick="closeScanner()">✕ Close</button>
+        </div>
+        <div class="scanner-video-container">
+            <video id="scannerVideo" playsinline muted></video>
+            <div class="scanner-guide"></div>
+            <button class="scanner-capture-btn" onclick="capturePhoto()" id="captureBtn">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+            </button>
+        </div>
+        <div class="scanner-result">
+            <input type="text" id="scannedVIN" placeholder="Scanned VIN will appear here..." maxlength="17">
+            <div class="scanner-actions">
+                <button class="scanner-retry" onclick="retryScanner()">🔄 Retry</button>
+                <button class="scanner-use" onclick="useScannedVIN()">✓ Use This VIN</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
     <script>
-        const DEFAULT_API = 'https://bmg-server.tail0249ad.ts.net';
+        // Theme Management
+        function getPreferredTheme() {
+            const saved = localStorage.getItem('bmg_theme');
+            if (saved) return saved;
+            return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('bmg_theme', theme);
+            // Update theme-color meta tag
+            const metaTheme = document.querySelector('meta[name="theme-color"]');
+            if (metaTheme) {
+                metaTheme.setAttribute('content', theme === 'light' ? '#f8fafc' : '#0a1628');
+            }
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || getPreferredTheme();
+            setTheme(current === 'dark' ? 'light' : 'dark');
+        }
+
+        // Initialize theme
+        setTheme(getPreferredTheme());
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('bmg_theme')) {
+                setTheme(e.matches ? 'light' : 'dark');
+            }
+        });
+
+        // Configuration
+        const DEFAULT_API = 'https://bmg-entry-production.up.railway.app';
         const NHTSA = 'https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues';
         let API = localStorage.getItem('bmg_api_url') || DEFAULT_API;
-        let currentVIN = '', currentCustomer = '', selectedOrder = null, graphicsProof = null;
+        
+        // State
+        let currentVIN = '';
+        let currentCustomer = '';
+        let selectedOrder = null;
+        let graphicsProof = null;
         let decodedVehicle = { year: '', make: '', model: '' };
-        let folderProofs = [], selectedFolder = '', graphicsCustomer = '';
-        let mondayClient = null;
-        try { mondayClient = window.monday; mondayClient.init(); } catch(e) {}
+        let folderProofs = [];
+        let selectedFolder = '';
+        let graphicsCustomer = '';
+        let codeReader = null;
+        let videoStream = null;
 
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedApi = localStorage.getItem('bmg_api_url');
+            if (savedApi) API = savedApi;
+            document.getElementById('vinInput').focus();
+            initMondayToken();
+        });
+
+        // VIN Input handling
+        document.getElementById('vinInput').addEventListener('input', async (e) => {
+            const v = e.target.value.trim().toUpperCase();
+            updateCharCount(v.length);
+            if (v.length === 17) {
+                await decodeVIN(v);
+            } else {
+                document.getElementById('vehicleInfo').classList.remove('visible');
+            }
+        });
+
+        document.getElementById('vinInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') goToStep2();
+        });
+
+        document.getElementById('customerInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchCustomer();
+        });
+
+        function updateCharCount(len) {
+            const el = document.getElementById('charCount');
+            el.textContent = `${len}/17${len === 17 ? ' ✓' : ''}`;
+            el.classList.toggle('valid', len === 17);
+        }
+
+        // VIN Decoding
         async function decodeVIN(vin) {
-            document.getElementById('vehicleInfoCard').classList.add('visible');
+            document.getElementById('vehicleInfo').classList.add('visible');
             try {
                 const r = await fetch(`${NHTSA}/${vin}?format=json`);
                 const d = await r.json();
                 if (d.Results?.[0]) {
-                    decodedVehicle = { year: d.Results[0].ModelYear||'', make: d.Results[0].Make||'', model: d.Results[0].Model||'' };
+                    decodedVehicle = {
+                        year: d.Results[0].ModelYear || '',
+                        make: d.Results[0].Make || '',
+                        model: d.Results[0].Model || ''
+                    };
                     document.getElementById('decodedYear').textContent = decodedVehicle.year || '—';
                     document.getElementById('decodedMake').textContent = decodedVehicle.make || '—';
                     document.getElementById('decodedModel').textContent = decodedVehicle.model || '—';
                 }
-            } catch(e) { console.error(e); }
+            } catch (e) {
+                console.error('VIN decode error:', e);
+            }
         }
 
-        async function loadFolders(customer) {
-            graphicsCustomer = customer;
-            const card = document.getElementById('graphicsCard');
-            const content = document.getElementById('graphicsContent');
-            card.classList.add('visible');
-            document.getElementById('graphicsTitle').textContent = 'Loading folders...';
-            content.innerHTML = '<div class="proof-loading"><div class="spinner"></div></div>';
-            try {
-                const r = await fetch(`${API}/graphics/customer/${encodeURIComponent(customer)}/folders`);
-                const d = await r.json();
-                if (d.found && d.folders?.length) {
-                    document.getElementById('graphicsTitle').textContent = `Graphics Folders (${d.count})`;
-                    content.innerHTML = '<div class="folder-grid">' + d.folders.map(f => 
-                        `<div class="folder-btn" onclick="loadFolderProofs('${f.name.replace(/'/g,"\\'")}')"><div class="folder-name">${f.name}</div><div class="folder-count">${f.proof_count} files</div></div>`
-                    ).join('') + '</div>';
-                } else {
-                    document.getElementById('graphicsTitle').textContent = 'No Graphics Found';
-                    content.innerHTML = '<div style="text-align:center;padding:16px;color:#a0aec0;">No folders found</div>';
-                }
-            } catch(e) { content.innerHTML = '<div style="color:#a0aec0;text-align:center;">API error</div>'; }
+        // Panel Navigation
+        function showPanel(n) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(`panel${n}`).classList.add('active');
+            updateSteps(n);
         }
 
-        async function loadFolderProofs(folderName) {
-            selectedFolder = folderName;
-            const content = document.getElementById('graphicsContent');
-            document.getElementById('graphicsTitle').textContent = `Loading ${folderName}...`;
-            content.innerHTML = '<div class="proof-loading"><div class="spinner"></div>Generating thumbnails...</div>';
-            try {
-                const r = await fetch(`${API}/graphics/customer/${encodeURIComponent(graphicsCustomer)}/folder/${encodeURIComponent(folderName)}/proofs`);
-                const d = await r.json();
-                if (d.found && d.proofs?.length) {
-                    folderProofs = d.proofs;
-                    document.getElementById('graphicsTitle').textContent = `${folderName} (${d.count} proofs)`;
-                    content.innerHTML = `<div class="back-link" onclick="loadFolders('${currentCustomer.replace(/'/g,"\\'")}')">← Back to folders</div>` +
-                        '<div class="proof-gallery">' + d.proofs.map((p,i) => 
-                            `<div class="proof-thumb" onclick="selectProof(${i})" data-i="${i}">
-                                ${p.thumbnail_base64 ? `<img src="data:image/png;base64,${p.thumbnail_base64}">` : '<div class="proof-thumb-placeholder">No preview</div>'}
-                                ${p.version ? `<span class="proof-thumb-version">v${p.version}</span>` : ''}
-                                <span class="proof-thumb-check">✓</span>
-                                <div class="proof-thumb-name">${p.file_name}</div>
-                            </div>`
-                        ).join('') + '</div>';
-                } else {
-                    content.innerHTML = `<div class="back-link" onclick="loadFolders('${currentCustomer.replace(/'/g,"\\'")}')">← Back</div><div style="text-align:center;padding:16px;color:#a0aec0;">No proofs in this folder</div>`;
-                }
-            } catch(e) { content.innerHTML = '<div style="color:#a0aec0;text-align:center;">Error loading proofs</div>'; }
+        function updateSteps(n) {
+            for (let i = 1; i <= 3; i++) {
+                const s = document.getElementById(`step${i}`);
+                s.classList.remove('active', 'complete');
+                if (i < n) s.classList.add('complete');
+                else if (i === n) s.classList.add('active');
+            }
         }
 
-        function selectProof(i) {
-            graphicsProof = folderProofs[i];
-            graphicsProof.folder = selectedFolder;
-            document.querySelectorAll('.proof-thumb').forEach((t,j) => t.classList.toggle('selected', j===i));
+        function goToStep1() {
+            showPanel(1);
+            document.getElementById('vinInput').focus();
         }
 
-        function showPanel(n) { document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); document.getElementById(`panel${n}`).classList.add('active'); updateSteps(n); }
-        function updateSteps(n) { for(let i=1;i<=3;i++) { const s=document.getElementById(`step${i}`); s.classList.remove('active','complete'); if(i<n) s.classList.add('complete'); else if(i===n) s.classList.add('active'); }}
-        function goToStep1() { showPanel(1); document.getElementById('vinInput').focus(); }
-        function goToStep2() { const v=document.getElementById('vinInput').value.trim().toUpperCase(); if(v.length!==17){showStatus('vinStatus','VIN must be 17 chars','warning');return;} currentVIN=v; showPanel(2); hideEl('statusMessage'); hideEl('resultsSection'); hideEl('graphicsCard'); document.getElementById('customerInput').focus(); }
-        
+        function goToStep2() {
+            const v = document.getElementById('vinInput').value.trim().toUpperCase();
+            if (v.length !== 17) {
+                showStatus('vinStatus', 'VIN must be 17 characters', 'warning');
+                return;
+            }
+            currentVIN = v;
+            showPanel(2);
+            hideEl('statusMessage');
+            hideEl('resultsSection');
+            hideEl('graphicsSection');
+            document.getElementById('customerInput').focus();
+        }
+
         function goToStep3() {
             showPanel(3);
             const v = [decodedVehicle.year, decodedVehicle.make, decodedVehicle.model].filter(Boolean).join(' ') || 'N/A';
-            const proof = graphicsProof ? `<span style="color:#4dabf7;">${graphicsProof.file_name}</span> (${graphicsProof.folder})` : '<span style="color:#ffaa00;">Not selected</span>';
+            const proof = graphicsProof 
+                ? `<span style="color: var(--navy-light);">${graphicsProof.file_name}</span>` 
+                : '<span style="color: var(--warning);">Not selected</span>';
+            
             document.getElementById('confirmationDetails').innerHTML = selectedOrder
-                ? `<p><strong>Customer:</strong> ${selectedOrder.customer_name}</p><p><strong>VIN:</strong> ${currentVIN}</p><p><strong>Vehicle:</strong> ${v}</p><p><strong>Order:</strong> ${selectedOrder.sales_order_number}</p><p><strong>Graphics:</strong> ${proof}</p>`
-                : `<p><strong>Customer:</strong> ${currentCustomer}</p><p><strong>VIN:</strong> ${currentVIN}</p><p><strong>Vehicle:</strong> ${v}</p><p><strong>Order:</strong> <span style="color:#ffaa00;">Missing</span></p><p><strong>Graphics:</strong> ${proof}</p>`;
+                ? `<p><strong>Customer:</strong> ${selectedOrder.customer_name}</p>
+                   <p><strong>VIN:</strong> <span style="font-family: monospace;">${currentVIN}</span></p>
+                   <p><strong>Vehicle:</strong> ${v}</p>
+                   <p><strong>Order:</strong> ${selectedOrder.sales_order_number}</p>
+                   <p><strong>Graphics:</strong> ${proof}</p>`
+                : `<p><strong>Customer:</strong> ${currentCustomer}</p>
+                   <p><strong>VIN:</strong> <span style="font-family: monospace;">${currentVIN}</span></p>
+                   <p><strong>Vehicle:</strong> ${v}</p>
+                   <p><strong>Order:</strong> <span style="color: var(--warning);">Missing</span></p>
+                   <p><strong>Graphics:</strong> ${proof}</p>`;
         }
-        
-        function startOver() { currentVIN=''; currentCustomer=''; selectedOrder=null; graphicsProof=null; folderProofs=[]; decodedVehicle={year:'',make:'',model:''}; document.getElementById('vinInput').value=''; document.getElementById('customerInput').value=''; document.getElementById('endUserInput').value=''; document.getElementById('vehicleInfoCard').classList.remove('visible'); hideEl('resultsSection'); hideEl('graphicsCard'); hideEl('statusMessage'); hideEl('vinStatus'); goToStep1(); }
 
-        function showStatus(id, msg, type) { const s=document.getElementById(id); s.className='status visible '+type; s.textContent=msg; }
-        function hideEl(id) { const e=document.getElementById(id); if(e) e.style.display='none'; e?.classList?.remove('visible'); }
+        function startOver() {
+            currentVIN = '';
+            currentCustomer = '';
+            selectedOrder = null;
+            graphicsProof = null;
+            folderProofs = [];
+            decodedVehicle = { year: '', make: '', model: '' };
+            document.getElementById('vinInput').value = '';
+            document.getElementById('customerInput').value = '';
+            document.getElementById('endUserInput').value = '';
+            document.getElementById('vehicleInfo').classList.remove('visible');
+            updateCharCount(0);
+            hideEl('resultsSection');
+            hideEl('graphicsSection');
+            hideEl('statusMessage');
+            hideEl('vinStatus');
+            goToStep1();
+        }
 
+        // Status Messages
+        function showStatus(id, msg, type) {
+            const s = document.getElementById(id);
+            s.className = `status visible ${type}`;
+            s.textContent = msg;
+        }
+
+        function hideEl(id) {
+            const e = document.getElementById(id);
+            if (e) {
+                e.style.display = 'none';
+                e.classList.remove('visible');
+            }
+        }
+
+        // Customer Search
         async function searchCustomer() {
             const name = document.getElementById('customerInput').value.trim();
-            if (!name) { showStatus('statusMessage','Enter customer name','warning'); return; }
+            if (!name) {
+                showStatus('statusMessage', 'Enter customer name', 'warning');
+                return;
+            }
             currentCustomer = name;
+            
             const btn = document.getElementById('searchBtn');
-            btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
-            hideEl('statusMessage'); hideEl('resultsSection'); hideEl('graphicsCard');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div>';
+            
+            hideEl('statusMessage');
+            hideEl('resultsSection');
+            hideEl('graphicsSection');
+
             try {
                 const r = await fetch(`${API}/sales-orders/customer/${encodeURIComponent(name)}`);
                 const d = await r.json();
+                
                 if (d.found && d.data?.length) {
                     window.searchResults = d.data;
                     showStatus('statusMessage', `Found ${d.count} order(s)`, 'success');
@@ -333,360 +1310,288 @@
                 } else {
                     showStatus('statusMessage', 'No orders found', 'warning');
                     document.getElementById('resultsSection').style.display = 'block';
-                    document.getElementById('resultsContainer').innerHTML = `<div style="text-align:center;padding:24px;"><button class="btn btn-secondary" onclick="createMissing()">Check In Anyway</button></div>`;
+                    document.getElementById('resultsSection').classList.add('visible');
+                    document.getElementById('resultsContainer').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <div class="empty-state-text">No sales orders found</div>
+                        </div>
+                        <button class="btn btn-ghost" onclick="createMissing()" style="margin-top: 12px;">Check In Anyway</button>
+                    `;
                 }
-                // Only load graphics if no end user specified
-            const endUser = document.getElementById('endUserInput').value.trim();
-            if (!endUser) {
-                await loadFolders(name);
+
+                // Load graphics unless end user specified
+                const endUser = document.getElementById('endUserInput').value.trim();
+                if (!endUser) {
+                    await loadFolders(name);
+                }
+            } catch (e) {
+                showStatus('statusMessage', `API error: ${e.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🔍 Search Sales Orders';
             }
-            } catch(e) { showStatus('statusMessage', `API error: ${API}`, 'error'); }
-            finally { btn.disabled=false; btn.innerHTML='🔍 Search'; }
         }
 
         function showResults(orders) {
             document.getElementById('resultsCount').textContent = orders.length;
-            document.getElementById('resultsContainer').innerHTML = orders.map((o,i) => {
-                const hasGfx = o.line_items?.some(l => /(vinyl|graphics|wrap|decal)/i.test(l.item_name||l.description||''));
-                const vinDisplay = o.vin ? `<div class="order-vin">VIN: ${o.vin}</div>` : '';
-                const lineItemsHtml = o.line_items?.length ? `
-                    <div class="line-items-toggle" onclick="event.stopPropagation();this.nextElementSibling.classList.toggle('visible')">▼ ${o.line_items.length} items</div>
-                    <div class="line-items-container">
-                        <table class="line-items-table">
-                            <thead><tr><th>Qty</th><th>Item</th><th>Description</th></tr></thead>
-                            <tbody>${o.line_items.map(l=>`<tr><td>${l.quantity||1}</td><td>${l.item_name||'—'}</td><td>${l.description||'—'}</td></tr>`).join('')}</tbody>
-                        </table>
+            document.getElementById('resultsContainer').innerHTML = orders.map((o, i) => `
+                <div class="order-card" onclick="selectOrder(${i})">
+                    <div class="order-header">
+                        <span class="order-number">${o.sales_order_number || 'N/A'}</span>
+                        <span class="order-status">${{A:'Pending',B:'Fulfillment',D:'Billing',E:'Partial'}[o.status] || 'Open'}</span>
                     </div>
-                ` : '';
-                return `<div class="order-card" onclick="selectOrder(${i})">
-                    <div class="order-header"><span class="order-number">${o.sales_order_number||'N/A'}</span><span class="order-status">${{A:'Pending',B:'Fulfillment',D:'Billing',E:'Partial'}[o.status]||'Open'}</span></div>
                     <div class="order-customer">${o.customer_name}</div>
-                    ${vinDisplay}
-                    ${hasGfx?'<div class="order-graphics">Has Graphics</div>':''}
-                    ${lineItemsHtml}
-                </div>`;
-            }).join('');
+                    ${o.vin ? `<div class="order-vin">VIN: ${o.vin}</div>` : ''}
+                </div>
+            `).join('');
+            
             document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('resultsSection').classList.add('visible');
             document.getElementById('confirmBtn').style.display = 'none';
         }
 
-        function selectOrder(i) { 
-            document.querySelectorAll('.order-card').forEach((c,j)=>c.classList.toggle('selected',j===i)); 
-            selectedOrder=window.searchResults[i]; 
-            document.getElementById('confirmBtn').style.display='flex';
+        function selectOrder(i) {
+            document.querySelectorAll('.order-card').forEach((c, j) => c.classList.toggle('selected', j === i));
+            selectedOrder = window.searchResults[i];
+            document.getElementById('confirmBtn').style.display = 'flex';
+            
             // Auto-fill VIN if available
             if (selectedOrder.vin && selectedOrder.vin.length === 17) {
                 currentVIN = selectedOrder.vin;
                 document.getElementById('vinInput').value = selectedOrder.vin;
+                updateCharCount(17);
                 decodeVIN(selectedOrder.vin);
             }
         }
 
-        async function confirmSelection() {
-            if (!selectedOrder) { showStatus('statusMessage','Select an order','warning'); return; }
-            const btn = document.getElementById('confirmBtn');
-            btn.disabled=true; btn.innerHTML='<div class="spinner"></div>';
-            try { await createMondayItem(selectedOrder); goToStep3(); }
-            catch(e) { showStatus('statusMessage','Error: '+e.message,'error'); }
-            finally { btn.disabled=false; btn.innerHTML='✓ Confirm'; }
+        // Graphics Functions
+        async function loadFolders(customer) {
+            graphicsCustomer = customer;
+            const section = document.getElementById('graphicsSection');
+            const content = document.getElementById('graphicsContent');
+            
+            section.classList.add('visible');
+            section.style.display = 'block';
+            document.getElementById('graphicsTitle').textContent = 'Loading folders...';
+            content.innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>';
+
+            try {
+                const r = await fetch(`${API}/graphics/customer/${encodeURIComponent(customer)}/folders`);
+                const d = await r.json();
+                
+                if (d.found && d.folders?.length) {
+                    document.getElementById('graphicsTitle').textContent = `Graphics Folders (${d.count})`;
+                    content.innerHTML = '<div class="folder-grid">' + d.folders.map(f => `
+                        <button class="folder-btn" onclick="loadFolderProofs('${f.name.replace(/'/g, "\\'")}')">
+                            <div class="folder-name">${f.name}</div>
+                            <div class="folder-count">${f.proof_count} files</div>
+                        </button>
+                    `).join('') + '</div>';
+                } else {
+                    document.getElementById('graphicsTitle').textContent = 'No Graphics Found';
+                    content.innerHTML = '<div class="empty-state"><div class="empty-state-text">No folders found</div></div>';
+                }
+            } catch (e) {
+                content.innerHTML = '<div class="empty-state"><div class="empty-state-text">API error</div></div>';
+            }
         }
 
-        async function createMissing() { selectedOrder=null; try { await createMondayItem(null); goToStep3(); } catch(e){showStatus('statusMessage','Error','error');} }
+        async function loadFolderProofs(folderName) {
+            selectedFolder = folderName;
+            const content = document.getElementById('graphicsContent');
+            document.getElementById('graphicsTitle').textContent = `Loading ${folderName}...`;
+            content.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div class="loading-text">Generating thumbnails...</div></div>';
 
-        async function createMondayItem(order) {
-            const BOARD = localStorage.getItem('bmg_board_id');
-            const cols = { text_mkzrg53a: currentVIN, text_mkzr3q83: decodedVehicle.year, text_mkzrxd5b: decodedVehicle.make, text_mkzrmkj8: decodedVehicle.model, date_mkzrp9m1:{date:new Date().toISOString().split('T')[0]}, color_mkzrv4bb:{label:'Received'}, color_mkzv2vf3:{label:order?'Found':'Missing'} };
-            if (order?.sales_order_number) cols.text_mkzr8a99 = order.sales_order_number;
-            const name = order?.customer_name || currentCustomer;
-            // Try to get token from SDK (when embedded in Monday.com) or localStorage (standalone)
-            let API_TOKEN = localStorage.getItem('monday_api_token');
-            
-            // If embedded in Monday.com, use SDK for auth
-            if (typeof monday !== 'undefined' && monday.setToken) {
-                try {
-                    const tokenData = await monday.get('sessionToken');
-                    if (tokenData && tokenData.data) {
-                        API_TOKEN = tokenData.data;
-                    }
-                } catch(e) { console.log('SDK token not available, using localStorage'); }
-            }
-            
-            if (!API_TOKEN) { alert('Set Monday API token in Settings or use inside Monday.com'); return; }
-            const BOARD_ID = '18396250282';
-            const colsJson = JSON.stringify(JSON.stringify(cols)); const query = `mutation { create_item (board_id: ${BOARD_ID}, item_name: "${name.replace(/"/g,'')}", column_values: ${colsJson}) { id } }`; const response = await fetch('https://api.monday.com/v2', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': API_TOKEN }, body: JSON.stringify({ query }) }); const result = await response.json(); if (result.errors) { alert(result.errors[0].message); throw new Error(result.errors[0].message); } alert('Checked in: ' + name);
-            
-            // Upload graphics proof if selected
-            if (graphicsProof && graphicsProof.relative_path && result.data && result.data.create_item) {
-                const itemId = result.data.create_item.id;
-                try {
-                    const uploadUrl = API + '/monday/upload-file?' + new URLSearchParams({
-                        item_id: itemId,
-                        column_id: 'file_mkzv3s01',
-                        file_path: graphicsProof.relative_path,
-                        api_token: API_TOKEN
-                    });
-                    
-                    const uploadResponse = await fetch(uploadUrl, { method: 'POST' });
-                    const uploadResult = await uploadResponse.json();
-                    console.log('Graphics upload result:', uploadResult);
-                } catch(e) {
-                    console.error('Failed to upload graphics proof:', e);
+            try {
+                const r = await fetch(`${API}/graphics/customer/${encodeURIComponent(graphicsCustomer)}/folder/${encodeURIComponent(folderName)}/proofs`);
+                const d = await r.json();
+                
+                if (d.found && d.proofs?.length) {
+                    folderProofs = d.proofs;
+                    document.getElementById('graphicsTitle').textContent = `${folderName} (${d.count} proofs)`;
+                    content.innerHTML = `
+                        <div class="back-link" onclick="loadFolders('${graphicsCustomer.replace(/'/g, "\\'")}')">← Back to folders</div>
+                        <div class="proof-gallery">
+                            ${d.proofs.map((p, i) => `
+                                <div class="proof-thumb" onclick="selectProof(${i})" data-i="${i}">
+                                    ${p.thumbnail_base64 
+                                        ? `<img src="data:image/png;base64,${p.thumbnail_base64}">` 
+                                        : '<div class="proof-thumb-placeholder">No preview</div>'}
+                                    ${p.version ? `<span class="proof-thumb-version">v${p.version}</span>` : ''}
+                                    <span class="proof-thumb-check">✓</span>
+                                    <div class="proof-thumb-name">${p.file_name}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="back-link" onclick="loadFolders('${graphicsCustomer.replace(/'/g, "\\'")}')">← Back</div>
+                        <div class="empty-state"><div class="empty-state-text">No proofs in this folder</div></div>
+                    `;
                 }
+            } catch (e) {
+                content.innerHTML = '<div class="empty-state"><div class="empty-state-text">Error loading proofs</div></div>';
             }
-            
-            // Upload sales order PDF if available
-            console.log('Checking SO PDF upload:', { order: order, orderId: order?.id, result: result });
-            if (order && order.id && result.data && result.data.create_item) {
-                console.log('Starting SO PDF upload...');
-                const itemId = result.data.create_item.id;
-                try {
-                    const pdfUploadUrl = API + '/monday/upload-sales-order-pdf?' + new URLSearchParams({
-                        item_id: itemId,
-                        column_id: 'file_mkzv44b3',
-                        sales_order_id: order.id,
-                        api_token: API_TOKEN
-                    });
-                    
-                    const pdfResponse = await fetch(pdfUploadUrl, { method: 'POST' });
-                    const pdfResult = await pdfResponse.json();
-                    console.log('Sales Order PDF upload result:', pdfResult);
-                } catch(e) {
-                    console.error('Failed to upload sales order PDF:', e);
-                }
-            }
+        }
+
+        function selectProof(i) {
+            graphicsProof = folderProofs[i];
+            graphicsProof.folder = selectedFolder;
+            document.querySelectorAll('.proof-thumb').forEach((t, j) => t.classList.toggle('selected', j === i));
         }
 
         async function loadEndUserGraphics() {
             const endUser = document.getElementById('endUserInput').value.trim();
             if (!endUser) {
-                alert('Enter an end user name to load their graphics');
+                alert('Enter an end user name');
                 return;
             }
             await loadFolders(endUser);
         }
-        
-        function toggleConfig() { 
-            const p=document.getElementById('configPanel'); 
-            p.classList.toggle('visible'); 
-            if(p.classList.contains('visible')) {
-                document.getElementById('apiUrlInput').value=API;
-                document.getElementById('mondayTokenInput').value=localStorage.getItem('monday_api_token')||'';
+
+        // Confirmation
+        async function confirmSelection() {
+            if (!selectedOrder) {
+                showStatus('statusMessage', 'Select an order', 'warning');
+                return;
+            }
+            
+            const btn = document.getElementById('confirmBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div>';
+
+            try {
+                await createMondayItem(selectedOrder);
+                goToStep3();
+            } catch (e) {
+                showStatus('statusMessage', 'Error: ' + e.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '✓ Confirm Selection';
             }
         }
-        function saveConfig() { 
-            const u=document.getElementById('apiUrlInput').value.trim(); 
-            if(u){API=u.replace(/\/$/,'');localStorage.setItem('bmg_api_url',API);} 
-            const token=document.getElementById('mondayTokenInput').value.trim();
-            if(token){localStorage.setItem('monday_api_token',token);}
-            showStatus('vinStatus','Saved!','success'); 
-            setTimeout(()=>hideEl('vinStatus'),2000); 
-            toggleConfig(); 
+
+        async function createMissing() {
+            selectedOrder = null;
+            try {
+                await createMondayItem(null);
+                goToStep3();
+            } catch (e) {
+                showStatus('statusMessage', 'Error: ' + e.message, 'error');
+            }
         }
 
-        // VIN Scanner functions
-        let codeReader = null;
-        let videoStream = null;
+        async function createMondayItem(order) {
+            let API_TOKEN = localStorage.getItem('monday_api_token');
+            if (!API_TOKEN) {
+                alert('Set Monday API token in Settings');
+                return;
+            }
 
+            const BOARD_ID = '18396250282';
+            const cols = {
+                text_mkzrg53a: currentVIN,
+                text_mkzr3q83: decodedVehicle.year,
+                text_mkzrxd5b: decodedVehicle.make,
+                text_mkzrmkj8: decodedVehicle.model,
+                date_mkzrp9m1: { date: new Date().toISOString().split('T')[0] },
+                color_mkzrv4bb: { label: 'Received' },
+                color_mkzv2vf3: { label: order ? 'Found' : 'Missing' }
+            };
+            
+            if (order?.sales_order_number) cols.text_mkzr8a99 = order.sales_order_number;
+            
+            const name = order?.customer_name || currentCustomer;
+            const colsJson = JSON.stringify(JSON.stringify(cols));
+            const query = `mutation { create_item (board_id: ${BOARD_ID}, item_name: "${name.replace(/"/g, '')}", column_values: ${colsJson}) { id } }`;
+            
+            const response = await fetch('https://api.monday.com/v2', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': API_TOKEN },
+                body: JSON.stringify({ query })
+            });
+            
+            const result = await response.json();
+            if (result.errors) throw new Error(result.errors[0].message);
+
+            // Upload graphics if selected
+            if (graphicsProof?.relative_path && result.data?.create_item?.id) {
+                const itemId = result.data.create_item.id;
+                try {
+                    await fetch(`${API}/monday/upload-file?` + new URLSearchParams({
+                        item_id: itemId,
+                        column_id: 'file_mkzv3s01',
+                        file_path: graphicsProof.relative_path,
+                        api_token: API_TOKEN
+                    }), { method: 'POST' });
+                } catch (e) {
+                    console.error('Graphics upload failed:', e);
+                }
+            }
+
+            // Upload SO PDF if available
+            if (order?.id && result.data?.create_item?.id) {
+                const itemId = result.data.create_item.id;
+                try {
+                    await fetch(`${API}/monday/upload-sales-order-pdf?` + new URLSearchParams({
+                        item_id: itemId,
+                        column_id: 'file_mkzv44b3',
+                        sales_order_id: order.id,
+                        api_token: API_TOKEN
+                    }), { method: 'POST' });
+                } catch (e) {
+                    console.error('SO PDF upload failed:', e);
+                }
+            }
+        }
+
+        // Scanner Functions
         async function openScanner() {
             const overlay = document.getElementById('scannerOverlay');
             const video = document.getElementById('scannerVideo');
             overlay.classList.add('visible');
-            
+
             try {
-                // Initialize ZXing barcode reader
                 if (!codeReader) {
                     codeReader = new ZXing.BrowserMultiFormatReader();
                 }
-                
-                // Get camera stream
+
                 videoStream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
                 });
                 video.srcObject = videoStream;
                 await video.play();
-                
-                // Start continuous scanning
                 scanForVIN();
             } catch (err) {
                 console.error('Camera error:', err);
-                alert('Could not access camera. Please check permissions.');
+                alert('Could not access camera');
                 closeScanner();
             }
         }
 
-        function capturePhoto() {
-            const video = document.getElementById('scannerVideo');
-            const videoContainer = document.querySelector('.scanner-video-container');
-            
-            // Get the guide box dimensions (80% width, 60px height, centered)
-            const containerRect = videoContainer.getBoundingClientRect();
-            const guideWidth = containerRect.width * 0.8;
-            const guideHeight = 60;
-            const guideLeft = (containerRect.width - guideWidth) / 2;
-            const guideTop = (containerRect.height - guideHeight) / 2;
-            
-            // Calculate the crop area in video coordinates
-            const scaleX = video.videoWidth / containerRect.width;
-            const scaleY = video.videoHeight / containerRect.height;
-            
-            const cropX = guideLeft * scaleX;
-            const cropY = guideTop * scaleY;
-            const cropWidth = guideWidth * scaleX;
-            const cropHeight = guideHeight * scaleY;
-            
-            // Expand the crop area vertically to capture more context (3x height)
-            const expandedCropY = Math.max(0, cropY - cropHeight);
-            const expandedCropHeight = cropHeight * 3;
-            
-            // Create canvas with just the cropped area
-            const canvas = document.createElement('canvas');
-            canvas.width = cropWidth;
-            canvas.height = expandedCropHeight;
-            const ctx = canvas.getContext('2d');
-            
-            // Draw only the cropped region
-            ctx.drawImage(video, 
-                cropX, expandedCropY, cropWidth, expandedCropHeight,  // Source rectangle
-                0, 0, cropWidth, expandedCropHeight                   // Destination rectangle
-            );
-            
-            // Store the captured image
-            capturedImageData = canvas.toDataURL('image/png');
-            
-            // Show preview
-            document.getElementById('previewImage').src = capturedImageData;
-            document.getElementById('scannerPreview').classList.add('visible');
-            document.getElementById('captureBtn').style.display = 'none';
-            document.getElementById('scannerStatus').textContent = 'Photo captured! Tap "Read VIN" to process';
-            
-            if (navigator.vibrate) navigator.vibrate(100);
-        }
-
-        function retakePhoto() {
-            document.getElementById('scannerPreview').classList.remove('visible');
-            document.getElementById('captureBtn').style.display = 'flex';
-            document.getElementById('scannerStatus').textContent = 'Position VIN in the box, then tap the button';
-            document.getElementById('scannerDetected').textContent = '—';
-            document.getElementById('scannerCharCount').textContent = '';
-            document.getElementById('scannerHints').textContent = 'Get close to the VIN • Good lighting helps';
-            capturedImageData = null;
-        }
-
-        async function processPhoto() {
-            console.log('processPhoto called');
-            console.log('capturedImageData:', capturedImageData ? 'exists' : 'null');
-            if (!capturedImageData) {
-                alert('No image captured');
-                return;
-            }
-            alert('Processing image...');
-            
-            document.getElementById('scannerStatus').textContent = 'Reading VIN...';
-            document.getElementById('scannerHints').textContent = 'Processing image with OCR...';
-            
-            try {
-                // Initialize Tesseract worker if needed
-                if (!tesseractWorker) {
-                    document.getElementById('scannerStatus').textContent = 'Loading OCR engine (first time only)...';
-                    tesseractWorker = await Tesseract.createWorker('eng');
-                    await tesseractWorker.setParameters({
-                        tessedit_char_whitelist: 'ABCDEFGHJKLMNPRSTUVWXYZ0123456789',
-                    });
-                }
-                
-                document.getElementById('scannerStatus').textContent = 'Reading text from image...';
-                
-                const { data: { text, confidence } } = await tesseractWorker.recognize(capturedImageData);
-                
-                console.log('OCR raw text:', text);
-                console.log('OCR confidence:', confidence);
-                
-                // Clean and fix common OCR mistakes for VINs
-                let cleaned = text.toUpperCase()
-                    .replace(/I/g, '1')  // I is invalid, likely meant 1
-                    .replace(/O/g, '0')  // O is invalid, likely meant 0
-                    .replace(/Q/g, '0')  // Q is invalid, likely meant 0
-                    .replace(/[^A-HJ-NPR-Z0-9]/g, ''); // Remove any other invalid chars
-                
-                console.log('Cleaned text:', cleaned);
-                
-                // Look for 17-character VIN pattern
-                const vinMatch = cleaned.match(/[A-HJ-NPR-Z0-9]{17}/);
-                
-                // Update live feedback
-                const detectedEl = document.getElementById('scannerDetected');
-                const charCountEl = document.getElementById('scannerCharCount');
-                const hintsEl = document.getElementById('scannerHints');
-                
-                if (vinMatch && isValidVIN(vinMatch[0])) {
-                    detectedEl.textContent = vinMatch[0];
-                    detectedEl.className = 'scanner-detected valid';
-                    charCountEl.textContent = '17 / 17 characters';
-                    hintsEl.textContent = '✓ Valid VIN found! Tap "Use This VIN"';
-                    document.getElementById('scannedVIN').value = vinMatch[0];
-                    document.getElementById('scannerStatus').textContent = '✓ VIN detected!';
-                    if (navigator.vibrate) navigator.vibrate(200);
-                } else if (cleaned.length >= 10) {
-                    // Show what we found even if not a complete VIN
-                    detectedEl.textContent = cleaned.substring(0, 20);
-                    detectedEl.className = 'scanner-detected partial';
-                    charCountEl.textContent = cleaned.length + ' characters found';
-                    hintsEl.textContent = 'Partial VIN detected • Try retaking closer or with better lighting';
-                    document.getElementById('scannerStatus').textContent = 'Partial match - try again';
-                    
-                    // Still put it in the field if close
-                    if (cleaned.length >= 15) {
-                        document.getElementById('scannedVIN').value = cleaned.substring(0, 17);
-                    }
-                } else {
-                    detectedEl.textContent = cleaned || '—';
-                    detectedEl.className = 'scanner-detected';
-                    charCountEl.textContent = cleaned.length + ' characters found';
-                    hintsEl.textContent = 'Could not find VIN • Make sure VIN is clearly visible and in focus';
-                    document.getElementById('scannerStatus').textContent = 'No VIN found - try again';
-                }
-                
-            } catch (err) {
-                console.error('OCR error:', err);
-                document.getElementById('scannerStatus').textContent = 'Error reading image';
-                document.getElementById('scannerHints').textContent = 'Please try again';
-            }
-        }
-
-        async function scanForVIN() {
+        function scanForVIN() {
             if (!codeReader || !videoStream) return;
             
-            const video = document.getElementById('scannerVideo');
-            
-            try {
-                codeReader.decodeFromVideoDevice(null, 'scannerVideo', (result, err) => {
-                    if (result) {
-                        const text = result.getText().toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
-                        if (text.length === 17) {
-                            document.getElementById('scannedVIN').value = text;
-                            // Vibrate on success if supported
-                            if (navigator.vibrate) navigator.vibrate(200);
-                        }
+            codeReader.decodeFromVideoDevice(null, 'scannerVideo', (result, err) => {
+                if (result) {
+                    const text = result.getText().toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
+                    if (text.length === 17) {
+                        document.getElementById('scannedVIN').value = text;
+                        if (navigator.vibrate) navigator.vibrate(200);
                     }
-                });
-            } catch (err) {
-                console.error('Scan error:', err);
-            }
+                }
+            });
         }
 
         function closeScanner() {
-            const overlay = document.getElementById('scannerOverlay');
-            overlay.classList.remove('visible');
-            
-            if (codeReader) {
-                codeReader.reset();
-            }
-            
+            document.getElementById('scannerOverlay').classList.remove('visible');
+            if (codeReader) codeReader.reset();
             if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop());
+                videoStream.getTracks().forEach(t => t.stop());
                 videoStream = null;
             }
-            
             document.getElementById('scannedVIN').value = '';
         }
 
@@ -698,6 +1603,7 @@
             const scannedVIN = document.getElementById('scannedVIN').value.trim();
             if (scannedVIN.length === 17) {
                 document.getElementById('vinInput').value = scannedVIN;
+                updateCharCount(17);
                 closeScanner();
                 decodeVIN(scannedVIN);
             } else {
@@ -705,66 +1611,52 @@
             }
         }
 
-        // Fetch Monday token from server if not in localStorage
+        function capturePhoto() {
+            if (navigator.vibrate) navigator.vibrate(100);
+        }
+
+        // Settings
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('visible');
+            if (panel.classList.contains('visible')) {
+                document.getElementById('apiUrlInput').value = API;
+                document.getElementById('mondayTokenInput').value = localStorage.getItem('monday_api_token') || '';
+            }
+        }
+
+        function saveSettings() {
+            const url = document.getElementById('apiUrlInput').value.trim();
+            if (url) {
+                API = url.replace(/\/$/, '');
+                localStorage.setItem('bmg_api_url', API);
+            }
+            
+            const token = document.getElementById('mondayTokenInput').value.trim();
+            if (token) localStorage.setItem('monday_api_token', token);
+            
+            showStatus('vinStatus', 'Settings saved!', 'success');
+            setTimeout(() => hideEl('vinStatus'), 2000);
+            toggleSettings();
+        }
+
         async function initMondayToken() {
             if (!localStorage.getItem('monday_api_token')) {
                 try {
-                    const r = await fetch(API + '/config/monday-token');
+                    const r = await fetch(`${API}/config/monday-token`);
                     if (r.ok) {
                         const data = await r.json();
-                        if (data.token) {
-                            localStorage.setItem('monday_api_token', data.token);
-                            console.log('Monday token loaded from server');
-                        }
+                        if (data.token) localStorage.setItem('monday_api_token', data.token);
                     }
-                } catch(e) { console.log('Could not fetch Monday token from server'); }
+                } catch (e) {
+                    console.log('Could not fetch Monday token');
+                }
             }
         }
-        initMondayToken();
 
-        document.getElementById('vinInput').addEventListener('keypress', e=>{if(e.key==='Enter')goToStep2();});
-        document.getElementById('customerInput').addEventListener('keypress', e=>{if(e.key==='Enter')searchCustomer();});
-
-        document.getElementById('vinInput').addEventListener('input', async e=>{ const v=e.target.value.trim().toUpperCase(); if(v.length===17) await decodeVIN(v); else document.getElementById('vehicleInfoCard').classList.remove('visible'); });
-        document.addEventListener('DOMContentLoaded', ()=>{ const u=localStorage.getItem('bmg_api_url'); if(u) API=u; document.getElementById('vinInput').focus(); });
-    </script>
-<!-- VIN Scanner Overlay -->
-    <div id="scannerOverlay" class="scanner-overlay">
-        <div class="scanner-header">
-            <h3>📷 Scan VIN Barcode</h3>
-            <button class="scanner-close" onclick="closeScanner()">✕ Close</button>
-        </div>
-        <div class="scanner-video-container">
-            <video id="scannerVideo" playsinline></video>
-            <div class="scanner-guide"></div>
-            <button class="scanner-capture-btn" onclick="capturePhoto()" id="captureBtn">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
-            </button>
-            <div class="scanner-preview" id="scannerPreview">
-                <img id="previewImage" src="" alt="Captured photo">
-                <div class="scanner-preview-actions">
-                    <button class="scanner-retake" onclick="retakePhoto()">↩ Retake</button>
-                    <button class="scanner-process" onclick="processPhoto()">🔍 Read VIN</button>
-                </div>
-            </div>
-        </div>
-        <div class="scanner-result">
-            <input type="text" id="scannedVIN" placeholder="Scanned VIN will appear here..." maxlength="17">
-            <div class="scanner-actions">
-                <button class="scanner-retry" onclick="retryScanner()">🔄 Retry</button>
-                <button class="scanner-use" onclick="useScannedVIN()">✓ Use This VIN</button>
-            </div>
-        </div>
-    </div>
-    <script src="https://unpkg.com/@zxing/library@latest"></script>
-<script>
-        // Register service worker for PWA
+        // Service Worker
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').then(reg => {
-                console.log('Service Worker registered');
-            }).catch(err => {
-                console.log('Service Worker registration failed:', err);
-            });
+            navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW error:', err));
         }
     </script>
 </body>
