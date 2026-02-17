@@ -403,6 +403,18 @@ async def serve_icon_512():
     return FileResponse("/app/icon-512.png", media_type="image/png")
 
 
+@app.get("/bmg-logo-white.png", tags=["Assets"])
+async def serve_logo_white():
+    """Serve white logo for dark mode."""
+    return FileResponse("/app/bmg-logo-white.png", media_type="image/png")
+
+
+@app.get("/bmg-logo-color.png", tags=["Assets"])
+async def serve_logo_color():
+    """Serve color logo for light mode."""
+    return FileResponse("/app/bmg-logo-color.png", media_type="image/png")
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
