@@ -16,7 +16,6 @@
     <style>
         /* BMG Ops Design System - Dark & Light Mode */
         :root {
-            /* Dark Mode (default) */
             --bg: #0a1628;
             --card: #0d1f35;
             --border: #1e2d3d;
@@ -93,7 +92,6 @@
 
         .container { max-width: 480px; margin: 0 auto; }
 
-        /* Header with Logo */
         .header {
             display: flex;
             justify-content: space-between;
@@ -103,15 +101,8 @@
             border-bottom: 1px solid var(--border);
         }
 
-        .logo-container {
-            height: 40px;
-        }
-
-        .logo-container img {
-            height: 100%;
-            width: auto;
-        }
-
+        .logo-container { height: 40px; }
+        .logo-container img { height: 100%; width: auto; }
         .logo-dark { display: var(--logo-display-dark); }
         .logo-light { display: var(--logo-display-light); }
 
@@ -127,18 +118,9 @@
             justify-content: center;
             transition: all 0.2s;
         }
+        .theme-toggle:hover { border-color: var(--navy); color: var(--navy); }
+        .theme-toggle svg { width: 20px; height: 20px; }
 
-        .theme-toggle:hover {
-            border-color: var(--navy);
-            color: var(--navy);
-        }
-
-        .theme-toggle svg {
-            width: 20px;
-            height: 20px;
-        }
-
-        /* Section Label */
         .section-label {
             font-size: 11px;
             font-weight: 700;
@@ -148,7 +130,6 @@
             margin-bottom: 12px;
         }
 
-        /* Cards */
         .card {
             background: var(--card);
             border: 1px solid var(--border);
@@ -157,17 +138,9 @@
             margin-bottom: 12px;
             transition: background 0.3s, border-color 0.3s;
         }
+        .card-success { border-color: rgba(52, 211, 153, 0.3); background: var(--success-bg); }
 
-        .card-success {
-            border-color: rgba(52, 211, 153, 0.3);
-            background: var(--success-bg);
-        }
-
-        .card-info {
-            border-color: #2a4a6f;
-        }
-
-        /* Tab Switcher */
+        /* Tab Switcher - matches BMG Ops exactly */
         .tabs {
             display: flex;
             gap: 4px;
@@ -176,7 +149,6 @@
             padding: 3px;
             margin-bottom: 12px;
         }
-
         .tab {
             flex: 1;
             padding: 8px;
@@ -189,20 +161,14 @@
             cursor: pointer;
             transition: all 0.2s;
         }
+        .tab.active { background: var(--tab-active-bg); color: var(--navy); }
 
-        .tab.active {
-            background: var(--tab-active-bg);
-            color: var(--navy);
-        }
-
-        /* Step Indicator */
         .steps {
             display: flex;
             justify-content: center;
             gap: 24px;
             margin-bottom: 20px;
         }
-
         .step {
             display: flex;
             align-items: center;
@@ -211,10 +177,8 @@
             font-weight: 600;
             color: var(--text-muted);
         }
-
         .step.active { color: var(--navy); }
         .step.complete { color: var(--success); }
-
         .step-number {
             width: 24px;
             height: 24px;
@@ -227,16 +191,9 @@
             font-weight: 700;
             font-size: 11px;
         }
+        .step.complete .step-number { background: var(--success); border-color: var(--success); color: #fff; }
 
-        .step.complete .step-number {
-            background: var(--success);
-            border-color: var(--success);
-            color: #fff;
-        }
-
-        /* Input Groups */
         .input-group { margin-bottom: 12px; }
-
         .input-label {
             display: block;
             font-size: 10px;
@@ -246,10 +203,7 @@
             letter-spacing: 0.5px;
             margin-bottom: 6px;
         }
-
-        .input-wrapper {
-            position: relative;
-        }
+        .input-wrapper { position: relative; }
 
         input[type="text"] {
             width: 100%;
@@ -263,15 +217,8 @@
             font-weight: 500;
             transition: all 0.2s;
         }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: var(--navy);
-        }
-
-        input::placeholder {
-            color: var(--text-muted);
-        }
+        input[type="text"]:focus { outline: none; border-color: var(--navy); }
+        input::placeholder { color: var(--text-muted); }
 
         .input-icon {
             position: absolute;
@@ -286,12 +233,13 @@
         #vinInput {
             text-transform: uppercase;
             font-family: 'SF Mono', Monaco, 'Courier New', monospace;
-            font-size: 16px;
-            letter-spacing: 1px;
+            font-size: 18px;
+            letter-spacing: 2px;
             font-weight: 700;
+            text-align: center;
+            padding-left: 14px;
         }
 
-        /* Character Count */
         .char-count {
             text-align: center;
             margin-top: 6px;
@@ -299,10 +247,8 @@
             font-weight: 600;
             color: var(--text-muted);
         }
-
         .char-count.valid { color: var(--success); }
 
-        /* Buttons */
         .btn {
             width: 100%;
             padding: 14px 20px;
@@ -317,22 +263,9 @@
             justify-content: center;
             gap: 8px;
         }
-
-        .btn-primary {
-            background: var(--navy);
-            color: #fff;
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: #fff;
-        }
-
+        .btn-primary { background: var(--navy); color: #fff; }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-success { background: var(--success); color: #fff; }
         .btn-secondary {
             background: transparent;
             border: 1px solid var(--border);
@@ -341,14 +274,12 @@
             font-size: 13px;
             padding: 10px 16px;
         }
-
         .btn-ghost {
             background: var(--tab-active-bg);
             border: 1px solid rgba(238, 49, 32, 0.15);
             color: var(--navy);
             font-weight: 700;
         }
-
         .btn .spinner {
             width: 18px;
             height: 18px;
@@ -357,10 +288,8 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Status Messages */
         .status {
             padding: 10px 14px;
             border-radius: 10px;
@@ -369,33 +298,90 @@
             margin-bottom: 12px;
             display: none;
         }
-
         .status.visible { display: block; }
         .status.error { background: var(--error-bg); border: 1px solid rgba(248,113,113,0.15); color: var(--error); }
         .status.success { background: var(--success-bg); border: 1px solid rgba(52,211,153,0.15); color: var(--success); }
         .status.warning { background: var(--warning-bg); border: 1px solid rgba(251,191,36,0.15); color: var(--warning); }
 
-        /* Vehicle Info Card */
-        .vehicle-info {
-            display: none;
+        /* Camera View - Inline like BMG Ops */
+        .camera-container {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+            height: 300px;
+            margin-bottom: 8px;
+        }
+        .camera-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .camera-guide {
+            position: absolute;
+            top: 50%;
+            left: 3%;
+            right: 3%;
+            height: 70px;
+            margin-top: -35px;
+            border: 3px solid rgba(238, 49, 32, 0.7);
+            border-radius: 10px;
+            pointer-events: none;
+            box-shadow: 0 0 20px rgba(238, 49, 32, 0.2);
+        }
+        .camera-status {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            text-align: center;
+        }
+        .camera-status-text {
+            font-size: 13px;
+            color: #fff;
+            font-weight: 700;
+        }
+        .camera-status-found {
+            font-size: 13px;
+            color: var(--warning);
+            margin-top: 3px;
+            font-family: monospace;
+            font-weight: 800;
+        }
+        .camera-status-scanning {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 3px;
+        }
+        .camera-error {
+            padding: 20px;
+            text-align: center;
+            background: var(--error-bg);
+            border: 1px solid rgba(248, 113, 113, 0.15);
+            border-radius: 14px;
+        }
+        .camera-error-text {
+            color: var(--error);
+            font-size: 13px;
+            margin-bottom: 12px;
         }
 
+        .vehicle-info { display: none; }
         .vehicle-info.visible { display: block; }
-
         .vehicle-info-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
             margin-top: 12px;
         }
-
         .vehicle-info-item {
             background: var(--bg);
             padding: 10px;
             border-radius: 10px;
             text-align: center;
         }
-
         .vehicle-info-label {
             font-size: 10px;
             font-weight: 600;
@@ -403,17 +389,10 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+        .vehicle-info-value { font-size: 15px; font-weight: 800; margin-top: 2px; }
 
-        .vehicle-info-value {
-            font-size: 15px;
-            font-weight: 800;
-            margin-top: 2px;
-        }
-
-        /* Results Section */
         .results { display: none; margin-top: 16px; }
         .results.visible { display: block; }
-
         .results-header {
             display: flex;
             justify-content: space-between;
@@ -422,9 +401,7 @@
             padding-bottom: 8px;
             border-bottom: 1px solid var(--border);
         }
-
         .results-title { font-weight: 700; font-size: 14px; }
-
         .results-count {
             font-size: 11px;
             font-weight: 700;
@@ -435,7 +412,6 @@
             border: 1px solid var(--border);
         }
 
-        /* Order Cards */
         .order-card {
             background: var(--card);
             border: 1px solid var(--border);
@@ -445,27 +421,10 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-
         .order-card:hover { border-color: var(--navy); }
-        .order-card.selected { 
-            border-color: var(--success); 
-            background: var(--success-bg);
-        }
-
-        .order-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-        }
-
-        .order-number {
-            font-family: 'SF Mono', Monaco, monospace;
-            font-weight: 800;
-            font-size: 14px;
-            color: var(--navy);
-        }
-
+        .order-card.selected { border-color: var(--success); background: var(--success-bg); }
+        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .order-number { font-family: 'SF Mono', Monaco, monospace; font-weight: 800; font-size: 14px; color: var(--navy); }
         .order-status {
             font-size: 10px;
             font-weight: 700;
@@ -475,27 +434,11 @@
             background: var(--success-bg);
             color: var(--success);
         }
+        .order-customer { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+        .order-vin { font-family: monospace; font-size: 11px; color: var(--navy-light); }
 
-        .order-customer {
-            font-weight: 600;
-            font-size: 13px;
-            margin-bottom: 4px;
-        }
-
-        .order-vin {
-            font-family: monospace;
-            font-size: 11px;
-            color: var(--navy-light);
-        }
-
-        /* Graphics Section */
-        .graphics-section {
-            display: none;
-            margin-top: 16px;
-        }
-
+        .graphics-section { display: none; margin-top: 16px; }
         .graphics-section.visible { display: block; }
-
         .graphics-header {
             display: flex;
             align-items: center;
@@ -505,13 +448,7 @@
             color: var(--navy-light);
             margin-bottom: 12px;
         }
-
-        .folder-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-        }
-
+        .folder-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
         .folder-btn {
             background: var(--bg);
             border: 1px solid var(--border);
@@ -522,10 +459,8 @@
             transition: all 0.2s;
             color: var(--text-primary);
         }
-
         .folder-btn:hover { border-color: var(--navy-light); }
         .folder-btn.selected { border-color: var(--success); background: var(--success-bg); }
-
         .folder-name { font-weight: 700; font-size: 13px; }
         .folder-count { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 
@@ -537,7 +472,6 @@
             max-height: 280px;
             overflow-y: auto;
         }
-
         .proof-thumb {
             background: var(--bg);
             border: 2px solid var(--border);
@@ -547,18 +481,9 @@
             position: relative;
             transition: all 0.2s;
         }
-
         .proof-thumb:hover { border-color: var(--navy-light); }
         .proof-thumb.selected { border-color: var(--success); }
-
-        .proof-thumb img {
-            width: 100%;
-            height: 80px;
-            object-fit: contain;
-            background: #fff;
-            border-radius: 6px;
-        }
-
+        .proof-thumb img { width: 100%; height: 80px; object-fit: contain; background: #fff; border-radius: 6px; }
         .proof-thumb-placeholder {
             width: 100%;
             height: 80px;
@@ -570,7 +495,6 @@
             color: var(--text-muted);
             font-size: 10px;
         }
-
         .proof-thumb-name {
             font-size: 9px;
             color: var(--text-muted);
@@ -580,7 +504,6 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-
         .proof-thumb-version {
             position: absolute;
             top: 6px;
@@ -592,7 +515,6 @@
             padding: 2px 6px;
             border-radius: 4px;
         }
-
         .proof-thumb-check {
             position: absolute;
             bottom: 28px;
@@ -607,7 +529,6 @@
             justify-content: center;
             font-size: 10px;
         }
-
         .proof-thumb.selected .proof-thumb-check { display: flex; }
 
         .back-link {
@@ -620,15 +541,9 @@
             cursor: pointer;
             margin-bottom: 12px;
         }
-
         .back-link:hover { color: var(--navy-light); }
 
-        /* Confirmation Panel */
-        .confirmation {
-            text-align: center;
-            padding: 32px 0;
-        }
-
+        .confirmation { text-align: center; padding: 32px 0; }
         .confirmation-icon {
             width: 64px;
             height: 64px;
@@ -641,13 +556,7 @@
             font-size: 28px;
             color: var(--success);
         }
-
-        .confirmation-title {
-            font-size: 18px;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-
+        .confirmation-title { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
         .confirmation-details {
             text-align: left;
             background: var(--card);
@@ -657,175 +566,10 @@
             margin: 20px 0;
             font-size: 13px;
         }
+        .confirmation-details p { margin-bottom: 6px; color: var(--text-secondary); }
+        .confirmation-details strong { color: var(--text-primary); }
 
-        .confirmation-details p {
-            margin-bottom: 6px;
-            color: var(--text-secondary);
-        }
-
-        .confirmation-details strong {
-            color: var(--text-primary);
-        }
-
-        /* Camera Button */
-        .camera-btn {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: var(--navy);
-            border: none;
-            border-radius: 8px;
-            padding: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .camera-btn svg { color: #fff; }
-
-        /* Scanner Overlay */
-        .scanner-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: #000;
-            z-index: 9999;
-            display: none;
-            flex-direction: column;
-        }
-
-        .scanner-overlay.visible { display: flex !important; }
-
-        .scanner-header {
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0,0,0,0.9);
-        }
-
-        .scanner-header h3 { color: #fff; font-size: 16px; font-weight: 700; }
-
-        .scanner-close {
-            background: var(--error);
-            border: none;
-            color: #fff;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .scanner-video-container {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .scanner-video-container video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .scanner-guide {
-            position: absolute;
-            top: 50%;
-            left: 3%;
-            right: 3%;
-            height: 70px;
-            margin-top: -35px;
-            border: 3px solid rgba(238, 49, 32, 0.7);
-            border-radius: 10px;
-            box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
-            pointer-events: none;
-        }
-
-        .scanner-guide::after {
-            content: "Position VIN barcode here";
-            position: absolute;
-            bottom: -28px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #fff;
-            font-size: 13px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .scanner-capture-btn {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: #fff;
-            border: 4px solid var(--navy);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .scanner-capture-btn svg { color: var(--navy); }
-
-        .scanner-result {
-            padding: 16px;
-            background: rgba(0,0,0,0.9);
-        }
-
-        .scanner-result input {
-            width: 100%;
-            padding: 14px;
-            font-size: 18px;
-            font-family: monospace;
-            text-align: center;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            background: var(--card);
-            color: var(--text-primary);
-        }
-
-        .scanner-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 12px;
-        }
-
-        .scanner-actions button {
-            flex: 1;
-            padding: 14px;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            border: none;
-            font-size: 14px;
-        }
-
-        .scanner-retry {
-            background: var(--card);
-            color: var(--text-secondary);
-            border: 1px solid var(--border) !important;
-        }
-
-        .scanner-use {
-            background: var(--navy);
-            color: #fff;
-        }
-
-        /* Settings Section */
-        .settings-section {
-            margin-top: 32px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border);
-        }
-
+        .settings-section { margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border); }
         .settings-toggle {
             display: flex;
             align-items: center;
@@ -835,7 +579,6 @@
             font-weight: 600;
             cursor: pointer;
         }
-
         .settings-panel {
             display: none;
             margin-top: 16px;
@@ -844,32 +587,16 @@
             border-radius: 14px;
             padding: 16px;
         }
-
         .settings-panel.visible { display: block; }
+        .settings-panel input { padding-left: 14px !important; }
 
-        .settings-panel input {
-            padding-left: 14px !important;
-        }
-
-        /* Panels */
         .panel { display: none; }
         .panel.active { display: block; }
 
-        /* Button Row */
-        .button-row {
-            display: flex;
-            gap: 8px;
-            margin-top: 12px;
-        }
-
+        .button-row { display: flex; gap: 8px; margin-top: 12px; }
         .button-row .btn { flex: 1; }
 
-        /* Loading Spinner */
-        .loading {
-            text-align: center;
-            padding: 40px 0;
-        }
-
+        .loading { text-align: center; padding: 40px 0; }
         .loading-spinner {
             width: 36px;
             height: 36px;
@@ -879,50 +606,31 @@
             margin: 0 auto;
             animation: spin 1s linear infinite;
         }
+        .loading-text { color: var(--navy-light); font-weight: 600; margin-top: 12px; font-size: 13px; }
 
-        .loading-text {
-            color: var(--navy-light);
-            font-weight: 600;
-            margin-top: 12px;
-            font-size: 13px;
-        }
+        .empty-state { text-align: center; padding: 32px 0; color: var(--text-muted); }
+        .empty-state-icon { font-size: 36px; margin-bottom: 8px; opacity: 0.4; }
+        .empty-state-text { font-weight: 600; font-size: 13px; }
 
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 32px 0;
-            color: var(--text-muted);
-        }
-
-        .empty-state-icon {
-            font-size: 36px;
-            margin-bottom: 8px;
-            opacity: 0.4;
-        }
-
-        .empty-state-text {
-            font-weight: 600;
-            font-size: 13px;
-        }
+        /* Hidden canvas for barcode processing */
+        #scanCanvas { display: none; }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header with Logo & Theme Toggle -->
         <header class="header">
             <div class="logo-container">
                 <img src="/bmg-logo-white.png" alt="BMG Fleet" class="logo-dark">
                 <img src="/bmg-logo-color.png" alt="BMG Fleet" class="logo-light">
             </div>
             <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
-                <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="5"/>
                     <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
                 </svg>
             </button>
         </header>
 
-        <!-- Steps -->
         <div class="steps">
             <div class="step active" id="step1"><span class="step-number">1</span><span>VIN</span></div>
             <div class="step" id="step2"><span class="step-number">2</span><span>Customer</span></div>
@@ -933,24 +641,37 @@
         <div id="panel1" class="panel active">
             <div class="section-label">Scan VIN</div>
             
-            <div class="input-group">
-                <label class="input-label">Vehicle Identification Number</label>
-                <div class="input-wrapper">
-                    <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="18" height="18" rx="2"/>
-                        <path d="M3 9h18M9 21V9"/>
-                    </svg>
-                    <input type="text" id="vinInput" placeholder="Scan or enter VIN..." maxlength="17" autocomplete="off" autofocus>
-                    <button type="button" class="camera-btn" onclick="openScanner()" title="Scan VIN">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                            <circle cx="12" cy="13" r="4"/>
-                        </svg>
-                    </button>
+            <!-- Mode Tabs - exactly like BMG Ops -->
+            <div class="tabs">
+                <button class="tab" id="tabCamera" onclick="switchToCamera()">Camera</button>
+                <button class="tab active" id="tabText" onclick="switchToText()">Type / Scanner</button>
+            </div>
+
+            <!-- Camera Mode -->
+            <div id="cameraMode" style="display: none;">
+                <div id="cameraError" class="camera-error" style="display: none;">
+                    <div class="camera-error-text" id="cameraErrorText"></div>
+                    <button class="btn btn-primary" onclick="switchToText()">Switch to Text Input</button>
+                </div>
+                <div id="cameraView">
+                    <div class="camera-container">
+                        <video id="video" playsinline muted></video>
+                        <div class="camera-guide"></div>
+                        <div class="camera-status">
+                            <div id="cameraStatusContent">
+                                <div class="camera-status-text">Starting camera...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <canvas id="scanCanvas"></canvas>
                 </div>
             </div>
-            
-            <div id="charCount" class="char-count">0/17</div>
+
+            <!-- Text Mode -->
+            <div id="textMode">
+                <input type="text" id="vinInput" placeholder="Enter or scan 17-char VIN" maxlength="17" autocomplete="off" autofocus>
+                <div id="charCount" class="char-count">0/17</div>
+            </div>
 
             <div id="vehicleInfo" class="card card-success vehicle-info">
                 <div style="display: flex; align-items: center; gap: 8px; color: var(--success); font-weight: 700; font-size: 13px;">
@@ -974,7 +695,9 @@
 
             <div id="vinStatus" class="status"></div>
 
-            <button class="btn btn-primary" onclick="goToStep2()" style="margin-top: 16px;">Next: Customer →</button>
+            <div id="textModeButtons">
+                <button class="btn btn-primary" id="decodeBtn" onclick="handleManualDecode()" disabled style="margin-top: 16px;">Decode VIN</button>
+            </div>
         </div>
 
         <!-- Panel 2: Customer Search -->
@@ -992,9 +715,7 @@
                 </div>
             </div>
 
-            <button class="btn btn-primary" id="searchBtn" onclick="searchCustomer()">
-                🔍 Search Sales Orders
-            </button>
+            <button class="btn btn-primary" id="searchBtn" onclick="searchCustomer()">🔍 Search Sales Orders</button>
 
             <div class="input-group" style="margin-top: 16px;">
                 <label class="input-label">End User (Graphics) <span style="font-weight: 400; text-transform: none; font-size: 10px; color: var(--text-muted);">— if different from customer</span></label>
@@ -1008,9 +729,7 @@
                 </div>
             </div>
 
-            <button class="btn btn-ghost" id="loadGraphicsBtn" onclick="loadEndUserGraphics()">
-                📁 Load Graphics for End User
-            </button>
+            <button class="btn btn-ghost" onclick="loadEndUserGraphics()">📁 Load Graphics for End User</button>
 
             <div class="button-row">
                 <button class="btn btn-secondary" onclick="goToStep1()">← Back</button>
@@ -1018,24 +737,18 @@
 
             <div id="statusMessage" class="status"></div>
 
-            <!-- Graphics Section -->
             <div id="graphicsSection" class="graphics-section card">
-                <div class="graphics-header">
-                    🖼️ <span id="graphicsTitle">Graphics Proofs</span>
-                </div>
+                <div class="graphics-header">🖼️ <span id="graphicsTitle">Graphics Proofs</span></div>
                 <div id="graphicsContent"></div>
             </div>
 
-            <!-- Results Section -->
             <div id="resultsSection" class="results">
                 <div class="results-header">
                     <span class="results-title">Sales Orders</span>
                     <span class="results-count" id="resultsCount">0</span>
                 </div>
                 <div id="resultsContainer"></div>
-                <button class="btn btn-success" id="confirmBtn" style="display: none; margin-top: 12px;" onclick="confirmSelection()">
-                    ✓ Confirm Selection
-                </button>
+                <button class="btn btn-success" id="confirmBtn" style="display: none; margin-top: 12px;" onclick="confirmSelection()">✓ Confirm Selection</button>
             </div>
         </div>
 
@@ -1049,7 +762,6 @@
             </div>
         </div>
 
-        <!-- Settings -->
         <div class="settings-section">
             <div class="settings-toggle" onclick="toggleSettings()">⚙️ Settings</div>
             <div id="settingsPanel" class="settings-panel">
@@ -1066,68 +778,35 @@
         </div>
     </div>
 
-    <!-- Scanner Overlay -->
-    <div id="scannerOverlay" class="scanner-overlay">
-        <div class="scanner-header">
-            <h3>📷 Scan VIN Barcode</h3>
-            <button class="scanner-close" onclick="closeScanner()">✕ Close</button>
-        </div>
-        <div class="scanner-video-container">
-            <video id="scannerVideo" playsinline muted></video>
-            <div class="scanner-guide"></div>
-            <button class="scanner-capture-btn" onclick="capturePhoto()" id="captureBtn">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
-            </button>
-        </div>
-        <div class="scanner-result">
-            <input type="text" id="scannedVIN" placeholder="Scanned VIN will appear here..." maxlength="17">
-            <div class="scanner-actions">
-                <button class="scanner-retry" onclick="retryScanner()">🔄 Retry</button>
-                <button class="scanner-use" onclick="useScannedVIN()">✓ Use This VIN</button>
-            </div>
-        </div>
-    </div>
-
     <script src="https://unpkg.com/@zxing/library@latest"></script>
     <script>
-        // Theme Management
+        // ========== THEME ==========
         function getPreferredTheme() {
             const saved = localStorage.getItem('bmg_theme');
             if (saved) return saved;
             return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
         }
-
         function setTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
             localStorage.setItem('bmg_theme', theme);
-            // Update theme-color meta tag
-            const metaTheme = document.querySelector('meta[name="theme-color"]');
-            if (metaTheme) {
-                metaTheme.setAttribute('content', theme === 'light' ? '#f8fafc' : '#0a1628');
-            }
+            const meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', theme === 'light' ? '#f8fafc' : '#0a1628');
         }
-
         function toggleTheme() {
             const current = document.documentElement.getAttribute('data-theme') || getPreferredTheme();
             setTheme(current === 'dark' ? 'light' : 'dark');
         }
-
-        // Initialize theme
         setTheme(getPreferredTheme());
-
-        // Listen for system theme changes
         window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
-            if (!localStorage.getItem('bmg_theme')) {
-                setTheme(e.matches ? 'light' : 'dark');
-            }
+            if (!localStorage.getItem('bmg_theme')) setTheme(e.matches ? 'light' : 'dark');
         });
 
-        // Configuration
+        // ========== CONFIG ==========
         const DEFAULT_API = 'https://bmg-entry-production.up.railway.app';
         const NHTSA = 'https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues';
         let API = localStorage.getItem('bmg_api_url') || DEFAULT_API;
-        
-        // State
+
+        // ========== STATE ==========
         let currentVIN = '';
         let currentCustomer = '';
         let selectedOrder = null;
@@ -1136,43 +815,206 @@
         let folderProofs = [];
         let selectedFolder = '';
         let graphicsCustomer = '';
-        let codeReader = null;
-        let videoStream = null;
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedApi = localStorage.getItem('bmg_api_url');
-            if (savedApi) API = savedApi;
-            document.getElementById('vinInput').focus();
-            initMondayToken();
-        });
+        // Scanner state - matching BMG Ops exactly
+        let mode = 'text';
+        let cameraActive = false;
+        let lastScanned = '';
+        let scanCount = 0;
+        let foundVin = false;
+        let streamRef = null;
+        let intervalRef = null;
+        let readerRef = null;
+        let zxingLib = null;
 
-        // VIN Input handling
-        document.getElementById('vinInput').addEventListener('input', async (e) => {
-            const v = e.target.value.trim().toUpperCase();
-            updateCharCount(v.length);
-            if (v.length === 17) {
-                await decodeVIN(v);
-            } else {
-                document.getElementById('vehicleInfo').classList.remove('visible');
-            }
-        });
-
-        document.getElementById('vinInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') goToStep2();
-        });
-
-        document.getElementById('customerInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') searchCustomer();
-        });
-
-        function updateCharCount(len) {
-            const el = document.getElementById('charCount');
-            el.textContent = `${len}/17${len === 17 ? ' ✓' : ''}`;
-            el.classList.toggle('valid', len === 17);
+        // ========== VIN VALIDATION - Same as BMG Ops ==========
+        function isValidVIN(vin) {
+            if (!vin || vin.length !== 17) return false;
+            // VINs cannot contain I, O, or Q
+            if (/[IOQ]/i.test(vin)) return false;
+            return /^[A-HJ-NPR-Z0-9]{17}$/i.test(vin);
         }
 
-        // VIN Decoding
+        // ========== SCANNER - Matching BMG Ops exactly ==========
+        async function startCamera() {
+            document.getElementById('cameraError').style.display = 'none';
+            foundVin = false;
+            lastScanned = '';
+            scanCount = 0;
+
+            try {
+                // Dynamic import of zxing
+                if (!zxingLib) {
+                    zxingLib = await import('https://unpkg.com/@zxing/library@latest/esm/index.js');
+                }
+
+                // Configure formats - same as BMG Ops
+                const formats = [
+                    zxingLib.BarcodeFormat.CODE_128,
+                    zxingLib.BarcodeFormat.CODE_39,
+                    zxingLib.BarcodeFormat.CODE_93,
+                    zxingLib.BarcodeFormat.DATA_MATRIX,
+                    zxingLib.BarcodeFormat.QR_CODE,
+                    zxingLib.BarcodeFormat.PDF_417,
+                    zxingLib.BarcodeFormat.ITF,
+                ];
+
+                const hints = new Map();
+                hints.set(zxingLib.DecodeHintType.POSSIBLE_FORMATS, formats);
+                hints.set(zxingLib.DecodeHintType.TRY_HARDER, true);
+
+                const reader = new zxingLib.MultiFormatReader();
+                reader.setHints(hints);
+                readerRef = reader;
+
+                // Get camera stream - same settings as BMG Ops
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                    }
+                });
+                streamRef = stream;
+
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                await video.play();
+                cameraActive = true;
+
+                updateCameraStatus();
+
+                // Start scanning at 200ms intervals - same as BMG Ops
+                intervalRef = setInterval(() => scanFrame(), 200);
+
+            } catch (e) {
+                let errorMsg = 'Camera error: ' + (e.message || 'Unknown error');
+                if (e.name === 'NotAllowedError' || (e.message && e.message.includes('Permission'))) {
+                    errorMsg = 'Camera permission denied. Allow camera access in your browser settings, or use text input.';
+                } else if (e.name === 'NotFoundError') {
+                    errorMsg = 'No camera found. Use text input instead.';
+                }
+                document.getElementById('cameraErrorText').textContent = errorMsg;
+                document.getElementById('cameraError').style.display = 'block';
+                document.getElementById('cameraView').style.display = 'none';
+            }
+        }
+
+        function stopCamera() {
+            if (intervalRef) {
+                clearInterval(intervalRef);
+                intervalRef = null;
+            }
+            if (streamRef) {
+                streamRef.getTracks().forEach(t => t.stop());
+                streamRef = null;
+            }
+            const video = document.getElementById('video');
+            if (video) video.srcObject = null;
+            cameraActive = false;
+        }
+
+        function scanFrame() {
+            if (foundVin) return;
+
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('scanCanvas');
+            if (!video || !canvas || !readerRef) return;
+            if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+
+            scanCount++;
+            updateCameraStatus();
+
+            try {
+                // Manual luminance conversion - same as BMG Ops
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const len = imageData.data.length / 4;
+                const luminances = new Uint8ClampedArray(len);
+                for (let i = 0; i < len; i++) {
+                    const r = imageData.data[i * 4];
+                    const g = imageData.data[i * 4 + 1];
+                    const b = imageData.data[i * 4 + 2];
+                    luminances[i] = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+                }
+
+                const source = new zxingLib.RGBLuminanceSource(luminances, canvas.width, canvas.height);
+                const bitmap = new zxingLib.BinaryBitmap(new zxingLib.HybridBinarizer(source));
+                const decoded = readerRef.decode(bitmap);
+                const raw = decoded.getText().trim().toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
+
+                lastScanned = raw;
+                updateCameraStatus();
+
+                // Auto-process if valid 17-char VIN - same as BMG Ops
+                if (raw.length === 17 && isValidVIN(raw)) {
+                    foundVin = true;
+                    stopCamera();
+                    currentVIN = raw;
+                    document.getElementById('vinInput').value = raw;
+                    updateCharCount(17);
+                    if (navigator.vibrate) navigator.vibrate(200);
+                    decodeAndProceed(raw);
+                }
+            } catch (e) {
+                // No barcode found in this frame - this is normal
+            }
+        }
+
+        function updateCameraStatus() {
+            const content = document.getElementById('cameraStatusContent');
+            if (cameraActive) {
+                if (lastScanned) {
+                    content.innerHTML = `
+                        <div class="camera-status-text">Hold 4-8 in from barcode</div>
+                        <div class="camera-status-found">FOUND: ${lastScanned} (${lastScanned.length} chars)</div>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="camera-status-text">Hold 4-8 in from barcode</div>
+                        <div class="camera-status-scanning">Scanning... ${scanCount} frames</div>
+                    `;
+                }
+            } else {
+                content.innerHTML = '<div class="camera-status-text">Starting camera...</div>';
+            }
+        }
+
+        function switchToCamera() {
+            mode = 'camera';
+            document.getElementById('tabCamera').classList.add('active');
+            document.getElementById('tabText').classList.remove('active');
+            document.getElementById('cameraMode').style.display = 'block';
+            document.getElementById('textMode').style.display = 'none';
+            document.getElementById('textModeButtons').style.display = 'none';
+            document.getElementById('cameraView').style.display = 'block';
+            document.getElementById('cameraError').style.display = 'none';
+            setTimeout(() => startCamera(), 300);
+        }
+
+        function switchToText() {
+            stopCamera();
+            mode = 'text';
+            document.getElementById('tabCamera').classList.remove('active');
+            document.getElementById('tabText').classList.add('active');
+            document.getElementById('cameraMode').style.display = 'none';
+            document.getElementById('textMode').style.display = 'block';
+            document.getElementById('textModeButtons').style.display = 'block';
+            document.getElementById('vinInput').focus();
+        }
+
+        // ========== VIN PROCESSING ==========
+        async function decodeAndProceed(vin) {
+            await decodeVIN(vin);
+            goToStep2();
+        }
+
         async function decodeVIN(vin) {
             document.getElementById('vehicleInfo').classList.add('visible');
             try {
@@ -1193,7 +1035,24 @@
             }
         }
 
-        // Panel Navigation
+        function handleManualDecode() {
+            const v = document.getElementById('vinInput').value.trim().toUpperCase();
+            if (!isValidVIN(v)) {
+                showStatus('vinStatus', 'Invalid VIN - must be 17 characters', 'warning');
+                return;
+            }
+            currentVIN = v;
+            decodeAndProceed(v);
+        }
+
+        function updateCharCount(len) {
+            const el = document.getElementById('charCount');
+            el.textContent = `${len}/17${len === 17 ? ' ✓' : ''}`;
+            el.classList.toggle('valid', len === 17);
+            document.getElementById('decodeBtn').disabled = len !== 17;
+        }
+
+        // ========== PANEL NAVIGATION ==========
         function showPanel(n) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.getElementById(`panel${n}`).classList.add('active');
@@ -1211,16 +1070,16 @@
 
         function goToStep1() {
             showPanel(1);
-            document.getElementById('vinInput').focus();
+            if (mode === 'text') {
+                document.getElementById('vinInput').focus();
+            }
         }
 
         function goToStep2() {
-            const v = document.getElementById('vinInput').value.trim().toUpperCase();
-            if (v.length !== 17) {
+            if (currentVIN.length !== 17) {
                 showStatus('vinStatus', 'VIN must be 17 characters', 'warning');
                 return;
             }
-            currentVIN = v;
             showPanel(2);
             hideEl('statusMessage');
             hideEl('resultsSection');
@@ -1255,6 +1114,9 @@
             graphicsProof = null;
             folderProofs = [];
             decodedVehicle = { year: '', make: '', model: '' };
+            foundVin = false;
+            lastScanned = '';
+            scanCount = 0;
             document.getElementById('vinInput').value = '';
             document.getElementById('customerInput').value = '';
             document.getElementById('endUserInput').value = '';
@@ -1267,7 +1129,7 @@
             goToStep1();
         }
 
-        // Status Messages
+        // ========== UTILITIES ==========
         function showStatus(id, msg, type) {
             const s = document.getElementById(id);
             s.className = `status visible ${type}`;
@@ -1282,7 +1144,7 @@
             }
         }
 
-        // Customer Search
+        // ========== CUSTOMER SEARCH ==========
         async function searchCustomer() {
             const name = document.getElementById('customerInput').value.trim();
             if (!name) {
@@ -1320,7 +1182,6 @@
                     `;
                 }
 
-                // Load graphics unless end user specified
                 const endUser = document.getElementById('endUserInput').value.trim();
                 if (!endUser) {
                     await loadFolders(name);
@@ -1356,7 +1217,6 @@
             selectedOrder = window.searchResults[i];
             document.getElementById('confirmBtn').style.display = 'flex';
             
-            // Auto-fill VIN if available
             if (selectedOrder.vin && selectedOrder.vin.length === 17) {
                 currentVIN = selectedOrder.vin;
                 document.getElementById('vinInput').value = selectedOrder.vin;
@@ -1365,7 +1225,7 @@
             }
         }
 
-        // Graphics Functions
+        // ========== GRAPHICS ==========
         async function loadFolders(customer) {
             graphicsCustomer = customer;
             const section = document.getElementById('graphicsSection');
@@ -1414,7 +1274,7 @@
                         <div class="back-link" onclick="loadFolders('${graphicsCustomer.replace(/'/g, "\\'")}')">← Back to folders</div>
                         <div class="proof-gallery">
                             ${d.proofs.map((p, i) => `
-                                <div class="proof-thumb" onclick="selectProof(${i})" data-i="${i}">
+                                <div class="proof-thumb" onclick="selectProof(${i})">
                                     ${p.thumbnail_base64 
                                         ? `<img src="data:image/png;base64,${p.thumbnail_base64}">` 
                                         : '<div class="proof-thumb-placeholder">No preview</div>'}
@@ -1451,7 +1311,7 @@
             await loadFolders(endUser);
         }
 
-        // Confirmation
+        // ========== CONFIRMATION ==========
         async function confirmSelection() {
             if (!selectedOrder) {
                 showStatus('statusMessage', 'Select an order', 'warning');
@@ -1516,7 +1376,6 @@
             const result = await response.json();
             if (result.errors) throw new Error(result.errors[0].message);
 
-            // Upload graphics if selected
             if (graphicsProof?.relative_path && result.data?.create_item?.id) {
                 const itemId = result.data.create_item.id;
                 try {
@@ -1531,7 +1390,6 @@
                 }
             }
 
-            // Upload SO PDF if available
             if (order?.id && result.data?.create_item?.id) {
                 const itemId = result.data.create_item.id;
                 try {
@@ -1547,75 +1405,7 @@
             }
         }
 
-        // Scanner Functions
-        async function openScanner() {
-            const overlay = document.getElementById('scannerOverlay');
-            const video = document.getElementById('scannerVideo');
-            overlay.classList.add('visible');
-
-            try {
-                if (!codeReader) {
-                    codeReader = new ZXing.BrowserMultiFormatReader();
-                }
-
-                videoStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-                });
-                video.srcObject = videoStream;
-                await video.play();
-                scanForVIN();
-            } catch (err) {
-                console.error('Camera error:', err);
-                alert('Could not access camera');
-                closeScanner();
-            }
-        }
-
-        function scanForVIN() {
-            if (!codeReader || !videoStream) return;
-            
-            codeReader.decodeFromVideoDevice(null, 'scannerVideo', (result, err) => {
-                if (result) {
-                    const text = result.getText().toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
-                    if (text.length === 17) {
-                        document.getElementById('scannedVIN').value = text;
-                        if (navigator.vibrate) navigator.vibrate(200);
-                    }
-                }
-            });
-        }
-
-        function closeScanner() {
-            document.getElementById('scannerOverlay').classList.remove('visible');
-            if (codeReader) codeReader.reset();
-            if (videoStream) {
-                videoStream.getTracks().forEach(t => t.stop());
-                videoStream = null;
-            }
-            document.getElementById('scannedVIN').value = '';
-        }
-
-        function retryScanner() {
-            document.getElementById('scannedVIN').value = '';
-        }
-
-        function useScannedVIN() {
-            const scannedVIN = document.getElementById('scannedVIN').value.trim();
-            if (scannedVIN.length === 17) {
-                document.getElementById('vinInput').value = scannedVIN;
-                updateCharCount(17);
-                closeScanner();
-                decodeVIN(scannedVIN);
-            } else {
-                alert('Please scan a valid 17-character VIN');
-            }
-        }
-
-        function capturePhoto() {
-            if (navigator.vibrate) navigator.vibrate(100);
-        }
-
-        // Settings
+        // ========== SETTINGS ==========
         function toggleSettings() {
             const panel = document.getElementById('settingsPanel');
             panel.classList.toggle('visible');
@@ -1631,10 +1421,8 @@
                 API = url.replace(/\/$/, '');
                 localStorage.setItem('bmg_api_url', API);
             }
-            
             const token = document.getElementById('mondayTokenInput').value.trim();
             if (token) localStorage.setItem('monday_api_token', token);
-            
             showStatus('vinStatus', 'Settings saved!', 'success');
             setTimeout(() => hideEl('vinStatus'), 2000);
             toggleSettings();
@@ -1648,13 +1436,42 @@
                         const data = await r.json();
                         if (data.token) localStorage.setItem('monday_api_token', data.token);
                     }
-                } catch (e) {
-                    console.log('Could not fetch Monday token');
-                }
+                } catch (e) {}
             }
         }
 
-        // Service Worker
+        // ========== INIT ==========
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedApi = localStorage.getItem('bmg_api_url');
+            if (savedApi) API = savedApi;
+            initMondayToken();
+            
+            // VIN input handling
+            document.getElementById('vinInput').addEventListener('input', (e) => {
+                const v = e.target.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/gi, '').slice(0, 17);
+                e.target.value = v;
+                updateCharCount(v.length);
+                if (v.length === 17) {
+                    decodeVIN(v);
+                } else {
+                    document.getElementById('vehicleInfo').classList.remove('visible');
+                }
+            });
+
+            document.getElementById('vinInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && document.getElementById('vinInput').value.length === 17) {
+                    handleManualDecode();
+                }
+            });
+
+            document.getElementById('customerInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') searchCustomer();
+            });
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => stopCamera());
+
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW error:', err));
         }
