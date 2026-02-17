@@ -843,10 +843,11 @@
             scanCount = 0;
 
             try {
-                // Dynamic import of zxing
-                if (!zxingLib) {
-                    zxingLib = await import('https://unpkg.com/@zxing/library@latest/esm/index.js');
+                // Use the preloaded ZXing library (from script tag)
+                if (typeof ZXing === 'undefined') {
+                    throw new Error('ZXing library not loaded');
                 }
+                zxingLib = ZXing;
 
                 // Configure formats - same as BMG Ops
                 const formats = [
